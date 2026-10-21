@@ -16,11 +16,28 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - run: pip install -e '.[dev]'
-      - run: pytest -q
+      - run: pip install -e '.[dev,all]'
+      - run: pytest -q -rs
       - name: Synthetic examples still regenerate identically
         run: |
           python examples/synthetic/generate.py
-          git diff --exit-code examples/synthetic
-      - name: Batch demo
-        run: taskwitness batch examples/synthetic --out report.json
+          python examples/synthetic_button/generate.py
+          git diff --exit-code examples
+      - name: Demos
+        run: |
+          taskwitness batch examples/synthetic --out report.json
+          taskwitness batch examples/synthetic_button --out report-button.json
+          taskwitness evaluate examples/synthetic examples/synthetic_button --out eval.json
+
+  core-only:
+    # The core must keep working with no third-party packages installed.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e '.[dev]'
+      - run: |
+          python -c "import importlib.util as u, sys; sys.exit(any(u.find_spec(m) for m in ('numpy', 'cv2', 'cryptography', 'inspect_robots')))"
+      - run: pytest -q -rs

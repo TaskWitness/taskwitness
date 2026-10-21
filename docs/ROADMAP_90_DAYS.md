@@ -17,10 +17,11 @@
 ## D8–30：真实实验（手机 + 称重传感器）
 
 - [ ] 搭建 WitnessNode 原型（见 `hardware/README.md`）：称重模块 + 微控制器 + USB 串口
-- [ ] 传感器适配器：把串口读数写成 `taskwitness.episode/v0`
-- [ ] 手机录像 + 简单目标检测，输出 `object_xy` 与置信度
+- [x] 传感器适配器：把串口读数写成 `taskwitness.episode/v0`（`taskwitness ingest`，v0.2）
+- [x] 称重与相机校准（`taskwitness calibrate`，v0.2）
+- [x] 手机录像 + 简单目标检测，输出 `object_xy` 与置信度（颜色块基线 `taskwitness track`，v0.2；尚未用真实视频验证）
 - [ ] 用手移动积木模拟机器人动作，采集 ≥ 200 次实验，由独立标注者给出标签
-- [ ] **事先固定**测试条件、阈值与指标，再对比：纯视觉 / 纯称重 / 融合
+- [ ] **事先固定**测试条件、阈值与指标，再对比：纯视觉 / 纯称重 / 融合（配置冻结与统计工具已就绪：`--config`、`taskwitness evaluate`，见 [实验指南](EXPERIMENT_GUIDE.md)）
 
 **指标**：False Pass 率、False Fail 率、UNKNOWN 率（覆盖率）、每次实验人工时间。
 
@@ -29,9 +30,10 @@
 ## D31–60：生态接入
 
 - [ ] WitnessNode 接线图、BOM、固件开源
-- [ ] 一个评测框架插件（优先 LeRobot 生态），以外部结果判定器方式接入
+- [x] 一个评测框架插件，以外部结果判定器方式接入（Inspect Robots scorer，v0.2）
+- [ ] LeRobot 数据集适配器（目前可导出逐回合分数后用 `taskwitness audit` 对照）
 - [ ] 联系拥有 SO-101 等开源机械臂的开发者，提供复现脚本与传感器方案
-- [ ] `ButtonPressOracle`（v0.2）
+- [x] `ButtonPressOracle`（v0.2）
 
 **验收**：至少 2 个外部真实机器人测试环境愿意运行实验并反馈结果。
 
@@ -41,7 +43,8 @@
 - [ ] WitnessBench 首个版本：带称重数据与独立标签的放置任务数据集
 - [ ] 汇总外部机器人环境的复现结果
 - [ ] 取得可复现的真实结果后，再发布 Show HN、相关 Reddit 社区与 Hugging Face Space
-- [ ] 证据包签名方案调研（当前 SHA-256 只能防误改，不能证明来源）
+- [x] 证据包签名（Ed25519，`taskwitness sign`，v0.2；签名只能证明来源，不能证明判定正确）
+- [ ] 任意时刻有效的序贯检验与有限样本 PPI 界（见 [研究笔记](RESEARCH.md)）
 
 **验收**：至少 1 份由外部贡献者独立复现并公开的真实实验结果。
 

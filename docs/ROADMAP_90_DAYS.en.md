@@ -17,10 +17,11 @@ Start date: 2026-10-21. Principle: every phase has checkable acceptance criteria
 ## D8–30: Real experiments (phone + load cell)
 
 - [ ] Build the WitnessNode prototype (see `hardware/README.en.md`): load-cell module + microcontroller + USB serial
-- [ ] Sensor adapter: turn serial readings into `taskwitness.episode/v0`
-- [ ] Phone video + simple object detection that outputs `object_xy` and confidence
+- [x] Sensor adapter: turn serial readings into `taskwitness.episode/v0` (`taskwitness ingest`, v0.2)
+- [x] Load-cell and camera calibration (`taskwitness calibrate`, v0.2)
+- [x] Phone video + simple object detection that outputs `object_xy` and confidence (colour-blob baseline `taskwitness track`, v0.2; not yet validated on real footage)
 - [ ] Move a block by hand to imitate the robot, collect at least 200 trials, each labeled by an independent annotator
-- [ ] **Fix in advance** the test conditions, thresholds and metrics, then compare: vision only / load cell only / fusion
+- [ ] **Fix in advance** the test conditions, thresholds and metrics, then compare: vision only / load cell only / fusion (config freezing and statistics are ready: `--config`, `taskwitness evaluate`; see the [experiment guide](EXPERIMENT_GUIDE.en.md))
 
 **Metrics:** false-pass rate, false-fail rate, UNKNOWN rate (coverage), human time per trial.
 
@@ -29,9 +30,10 @@ Start date: 2026-10-21. Principle: every phase has checkable acceptance criteria
 ## D31–60: Ecosystem
 
 - [ ] WitnessNode wiring diagram, BOM and firmware, all open source
-- [ ] One evaluation-framework plugin (LeRobot ecosystem first), integrated as an external result judge
+- [x] One evaluation-framework plugin, integrated as an external result judge (Inspect Robots scorers, v0.2)
+- [ ] LeRobot dataset adapter (today: export per-episode scores and compare with `taskwitness audit`)
 - [ ] Reach developers with open-source arms such as SO-101 and give them reproduction scripts and the sensor design
-- [ ] `ButtonPressOracle` (v0.2)
+- [x] `ButtonPressOracle` (v0.2)
 
 **Done when:** at least 2 external real-robot test setups have agreed to run the experiment and report back.
 
@@ -41,7 +43,8 @@ Start date: 2026-10-21. Principle: every phase has checkable acceptance criteria
 - [ ] First WitnessBench release: a place-task dataset with load-cell data and independent labels
 - [ ] Collect reproduction results from external robot setups
 - [ ] Only after reproducible real results exist: Show HN, relevant Reddit communities and a Hugging Face Space
-- [ ] Research evidence-bundle signing (SHA-256 alone only catches edits; it cannot prove who produced a bundle)
+- [x] Evidence-bundle signing (Ed25519, `taskwitness sign`, v0.2; a signature proves origin, not correctness)
+- [ ] Anytime-valid sequential tests and finite-sample PPI bounds (see [research notes](RESEARCH.en.md))
 
 **Done when:** at least 1 real experiment result has been independently reproduced by an outside contributor and published.
 
