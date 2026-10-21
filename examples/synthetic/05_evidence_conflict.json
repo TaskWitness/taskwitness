@@ -1,0 +1,691 @@
+{
+ "schema": "taskwitness.episode/v0",
+ "episode_id": "05_evidence_conflict",
+ "description": "Plate reads the object's mass but the camera sees the block outside the zone (e.g. a look-alike object on the plate or camera calibration drift).",
+ "synthetic": true,
+ "task": {
+  "type": "place",
+  "object": {
+   "name": "red_block",
+   "mass_g": 52.0
+  },
+  "target_zone": {
+   "x_min": 0.3,
+   "x_max": 0.4,
+   "y_min": -0.05,
+   "y_max": 0.05
+  }
+ },
+ "claim": {
+  "source": "policy_self_report",
+  "success": true
+ },
+ "video": [
+  {
+   "t": 0.0,
+   "object_xy": [
+    0.1,
+    0.2
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 0.1,
+   "object_xy": [
+    0.1125,
+    0.19
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 0.2,
+   "object_xy": [
+    0.125,
+    0.18
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 0.3,
+   "object_xy": [
+    0.1375,
+    0.17
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 0.4,
+   "object_xy": [
+    0.15,
+    0.16
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 0.5,
+   "object_xy": [
+    0.1625,
+    0.15
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 0.6,
+   "object_xy": [
+    0.175,
+    0.14
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 0.7,
+   "object_xy": [
+    0.1875,
+    0.13
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 0.8,
+   "object_xy": [
+    0.2,
+    0.12
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 0.9,
+   "object_xy": [
+    0.2125,
+    0.11
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 1.0,
+   "object_xy": [
+    0.225,
+    0.1
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 1.1,
+   "object_xy": [
+    0.2375,
+    0.09
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 1.2,
+   "object_xy": [
+    0.25,
+    0.08
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 1.3,
+   "object_xy": [
+    0.2625,
+    0.07
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 1.4,
+   "object_xy": [
+    0.275,
+    0.06
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 1.5,
+   "object_xy": [
+    0.2875,
+    0.05
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 1.6,
+   "object_xy": [
+    0.3,
+    0.04
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 1.7,
+   "object_xy": [
+    0.3125,
+    0.03
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 1.8,
+   "object_xy": [
+    0.325,
+    0.02
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 1.9,
+   "object_xy": [
+    0.3375,
+    0.01
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 2.0,
+   "object_xy": [
+    0.46,
+    0.02
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 2.1,
+   "object_xy": [
+    0.46,
+    0.02
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 2.2,
+   "object_xy": [
+    0.46,
+    0.02
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 2.3,
+   "object_xy": [
+    0.46,
+    0.02
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 2.4,
+   "object_xy": [
+    0.46,
+    0.02
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 2.5,
+   "object_xy": [
+    0.46,
+    0.02
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 2.6,
+   "object_xy": [
+    0.46,
+    0.02
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 2.7,
+   "object_xy": [
+    0.46,
+    0.02
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 2.8,
+   "object_xy": [
+    0.46,
+    0.02
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 2.9,
+   "object_xy": [
+    0.46,
+    0.02
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 3.0,
+   "object_xy": [
+    0.46,
+    0.02
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 3.1,
+   "object_xy": [
+    0.46,
+    0.02
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 3.2,
+   "object_xy": [
+    0.46,
+    0.02
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 3.3,
+   "object_xy": [
+    0.46,
+    0.02
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 3.4,
+   "object_xy": [
+    0.46,
+    0.02
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 3.5,
+   "object_xy": [
+    0.46,
+    0.02
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 3.6,
+   "object_xy": [
+    0.46,
+    0.02
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 3.7,
+   "object_xy": [
+    0.46,
+    0.02
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 3.8,
+   "object_xy": [
+    0.46,
+    0.02
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 3.9,
+   "object_xy": [
+    0.46,
+    0.02
+   ],
+   "confidence": 0.88
+  },
+  {
+   "t": 4.0,
+   "object_xy": [
+    0.46,
+    0.02
+   ],
+   "confidence": 0.88
+  }
+ ],
+ "sensors": {
+  "load_cell": [
+   {
+    "t": 0.0,
+    "grams": 0.04
+   },
+   {
+    "t": 0.1,
+    "grams": 0.0
+   },
+   {
+    "t": 0.2,
+    "grams": 0.11
+   },
+   {
+    "t": 0.3,
+    "grams": 0.0
+   },
+   {
+    "t": 0.4,
+    "grams": 0.01
+   },
+   {
+    "t": 0.5,
+    "grams": 0.0
+   },
+   {
+    "t": 0.6,
+    "grams": 0.0
+   },
+   {
+    "t": 0.7,
+    "grams": 0.0
+   },
+   {
+    "t": 0.8,
+    "grams": 0.0
+   },
+   {
+    "t": 0.9,
+    "grams": 0.13
+   },
+   {
+    "t": 1.0,
+    "grams": 0.6
+   },
+   {
+    "t": 1.1,
+    "grams": 0.19
+   },
+   {
+    "t": 1.2,
+    "grams": 0.23
+   },
+   {
+    "t": 1.3,
+    "grams": 0.21
+   },
+   {
+    "t": 1.4,
+    "grams": 0.0
+   },
+   {
+    "t": 1.5,
+    "grams": 0.0
+   },
+   {
+    "t": 1.6,
+    "grams": 0.32
+   },
+   {
+    "t": 1.7,
+    "grams": 0.0
+   },
+   {
+    "t": 1.8,
+    "grams": 0.6
+   },
+   {
+    "t": 1.9,
+    "grams": 0.1
+   },
+   {
+    "t": 2.0,
+    "grams": 52.41
+   },
+   {
+    "t": 2.1,
+    "grams": 51.64
+   },
+   {
+    "t": 2.2,
+    "grams": 52.72
+   },
+   {
+    "t": 2.3,
+    "grams": 51.82
+   },
+   {
+    "t": 2.4,
+    "grams": 51.94
+   },
+   {
+    "t": 2.5,
+    "grams": 52.0
+   },
+   {
+    "t": 2.6,
+    "grams": 51.57
+   },
+   {
+    "t": 2.7,
+    "grams": 51.83
+   },
+   {
+    "t": 2.8,
+    "grams": 52.26
+   },
+   {
+    "t": 2.9,
+    "grams": 52.71
+   },
+   {
+    "t": 3.0,
+    "grams": 51.97
+   },
+   {
+    "t": 3.1,
+    "grams": 51.71
+   },
+   {
+    "t": 3.2,
+    "grams": 52.64
+   },
+   {
+    "t": 3.3,
+    "grams": 51.81
+   },
+   {
+    "t": 3.4,
+    "grams": 52.64
+   },
+   {
+    "t": 3.5,
+    "grams": 51.72
+   },
+   {
+    "t": 3.6,
+    "grams": 51.89
+   },
+   {
+    "t": 3.7,
+    "grams": 52.52
+   },
+   {
+    "t": 3.8,
+    "grams": 52.04
+   },
+   {
+    "t": 3.9,
+    "grams": 51.92
+   },
+   {
+    "t": 4.0,
+    "grams": 52.01
+   }
+  ],
+  "gripper": [
+   {
+    "t": 0.0,
+    "state": "closed"
+   },
+   {
+    "t": 0.1,
+    "state": "closed"
+   },
+   {
+    "t": 0.2,
+    "state": "closed"
+   },
+   {
+    "t": 0.3,
+    "state": "closed"
+   },
+   {
+    "t": 0.4,
+    "state": "closed"
+   },
+   {
+    "t": 0.5,
+    "state": "closed"
+   },
+   {
+    "t": 0.6,
+    "state": "closed"
+   },
+   {
+    "t": 0.7,
+    "state": "closed"
+   },
+   {
+    "t": 0.8,
+    "state": "closed"
+   },
+   {
+    "t": 0.9,
+    "state": "closed"
+   },
+   {
+    "t": 1.0,
+    "state": "closed"
+   },
+   {
+    "t": 1.1,
+    "state": "closed"
+   },
+   {
+    "t": 1.2,
+    "state": "closed"
+   },
+   {
+    "t": 1.3,
+    "state": "closed"
+   },
+   {
+    "t": 1.4,
+    "state": "closed"
+   },
+   {
+    "t": 1.5,
+    "state": "closed"
+   },
+   {
+    "t": 1.6,
+    "state": "closed"
+   },
+   {
+    "t": 1.7,
+    "state": "closed"
+   },
+   {
+    "t": 1.8,
+    "state": "closed"
+   },
+   {
+    "t": 1.9,
+    "state": "closed"
+   },
+   {
+    "t": 2.0,
+    "state": "closed"
+   },
+   {
+    "t": 2.1,
+    "state": "closed"
+   },
+   {
+    "t": 2.2,
+    "state": "open"
+   },
+   {
+    "t": 2.3,
+    "state": "open"
+   },
+   {
+    "t": 2.4,
+    "state": "open"
+   },
+   {
+    "t": 2.5,
+    "state": "open"
+   },
+   {
+    "t": 2.6,
+    "state": "open"
+   },
+   {
+    "t": 2.7,
+    "state": "open"
+   },
+   {
+    "t": 2.8,
+    "state": "open"
+   },
+   {
+    "t": 2.9,
+    "state": "open"
+   },
+   {
+    "t": 3.0,
+    "state": "open"
+   },
+   {
+    "t": 3.1,
+    "state": "open"
+   },
+   {
+    "t": 3.2,
+    "state": "open"
+   },
+   {
+    "t": 3.3,
+    "state": "open"
+   },
+   {
+    "t": 3.4,
+    "state": "open"
+   },
+   {
+    "t": 3.5,
+    "state": "open"
+   },
+   {
+    "t": 3.6,
+    "state": "open"
+   },
+   {
+    "t": 3.7,
+    "state": "open"
+   },
+   {
+    "t": 3.8,
+    "state": "open"
+   },
+   {
+    "t": 3.9,
+    "state": "open"
+   },
+   {
+    "t": 4.0,
+    "state": "open"
+   }
+  ]
+ },
+ "label": {
+  "verdict": "UNKNOWN",
+  "note": "Synthetic ground truth: independent evidence disagrees; needs human review."
+ }
+}
