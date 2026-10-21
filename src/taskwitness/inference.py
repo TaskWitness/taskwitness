@@ -66,9 +66,10 @@ def sequential_paired_test(outcomes: Sequence[int], alpha: float = 0.05) -> dict
         "discordant_pairs": len(outcomes),
         "a_only_errors": int(sum(outcomes)),
         "b_only_errors": len(outcomes) - int(sum(outcomes)),
-        "e_value": round(path[-1], 6) if path else 1.0,
-        "max_e_value": round(best, 6),
-        "anytime_p": round(min(1.0, 1 / best), 6),
+        # significant figures, not decimals: rounding would turn a tiny p-value into 0
+        "e_value": float(f"{path[-1]:.6g}") if path else 1.0,
+        "max_e_value": float(f"{best:.6g}"),
+        "anytime_p": float(f"{min(1.0, 1 / best):.6g}"),
         "alpha": alpha,
         "rejected": stopped_at is not None,
         "stopped_at_pair": stopped_at,

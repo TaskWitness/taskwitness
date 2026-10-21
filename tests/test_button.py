@@ -134,3 +134,47 @@ def test_malformed_button_episode_rejected(mutate):
     mutate(episode)
     with pytest.raises(EpisodeError):
         verify_button_press(episode)
+
+
+def sampled_episode(contacts, hz):
+    episode = load("b01_clean_press")
+    n = int(3.0 * hz)
+    episode["sensors"]["button"] = [
+        {"t": round(i / hz, 4), "pressed": any(a <= i / hz < b for a, b in contacts)} for i in range(n + 1)
+    ]
+    return episode
+
+
+def test_slow_switch_sampling_cannot_confirm_a_brush_as_a_press():
+    # A 40 ms brush sampled at 20 Hz shows up as one closed sample: it may have lasted 0-100 ms.
+    bundle = verify_button_press(sampled_episode([(1.49, 1.53)], hz=20))
+    assert bundle["oracles"][0]["state"] == "UNRESOLVED_HOLD"
+    assert bundle["verdict"] == "UNKNOWN"
+    # The same brush sampled at 500 Hz is plainly too short.
+    assert verify_button_press(sampled_episode([(1.49, 1.53)], hz=500))["verdict"] == "FAIL"
+
+
+def test_real_press_is_confirmed_at_a_modest_rate_and_brush_is_not():
+    assert verify_button_press(sampled_episode([(1.5, 1.8)], hz=20))["verdict"] == "PASS"
+    assert verify_button_press(sampled_episode([(1.5, 1.8)], hz=100))["verdict"] == "PASS"
+    brush = verify_button_press(sampled_episode([(1.5, 1.53)], hz=100))
+    assert brush["verdict"] == "FAIL"
+
+
+def test_a_press_elsewhere_still_passes_when_another_contact_is_unresolved():
+    episode = sampled_episode([(0.5, 0.9), (1.49, 1.53)], hz=20)
+    assert verify_button_press(episode)["verdict"] == "PASS"
+
+
+def test_unresolved_second_contact_blocks_a_pass_when_presses_are_capped():
+    # A confirmed 300 ms press, then a 40 ms contact seen by one 20 Hz sample: it might have been a second press.
+    capped = sampled_episode([(0.5, 0.8), (1.49, 1.53)], hz=20)
+    capped["task"]["button"]["max_presses"] = 1
+    bundle = verify_button_press(capped)
+    assert bundle["verdict"] == "UNKNOWN" and bundle["oracles"][0]["state"] == "UNRESOLVED_HOLD"
+    # Without a cap the confirmed press is enough, and with a fast switch the second contact is plainly too short.
+    uncapped = sampled_episode([(0.5, 0.8), (1.49, 1.53)], hz=20)
+    assert verify_button_press(uncapped)["verdict"] == "PASS"
+    fast = sampled_episode([(0.5, 0.8), (1.49, 1.53)], hz=500)
+    fast["task"]["button"]["max_presses"] = 1
+    assert verify_button_press(fast)["verdict"] == "PASS"

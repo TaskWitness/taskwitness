@@ -98,8 +98,11 @@ def test_cli_calibrates_thresholds_that_make_the_oracle_work(tmp_path):
     from taskwitness.calibration import LoadCellCalibration
 
     cell = LoadCellCalibration.from_dict(json.loads(cal.read_text(encoding="utf-8")))
-    rows, report = read_series(Path(block).read_text(encoding="utf-8").splitlines(), "block")
+    # A real trial: two seconds of empty plate, then the block rests on it.
+    rows, report = read_series(Path(empty).read_text(encoding="utf-8").splitlines()[:41], "empty")
     load = load_cell_samples(rows, report, t0_ms=0, calibration=cell)
+    rows, report = read_series(Path(block).read_text(encoding="utf-8").splitlines()[:101], "block")
+    load += [dict(s, t=s["t"] + 2.0) for s in load_cell_samples(rows, report, t0_ms=0, calibration=cell)]
     task = {"object": {"name": "block", "mass_g": 52.0}, "target_zone": {"x_min": 0, "x_max": 1, "y_min": 0, "y_max": 1}}
     episode = build_episode("place", task, "calibrated", {"load_cell": load})
     assert judge(episode, doc["config"]).passed

@@ -100,6 +100,11 @@ def _check_gripper(sample: dict, here: str) -> None:
         raise EpisodeError(f"{here}.state must be 'open' or 'closed', got {state!r}")
 
 
+def _check_width(sample: dict, here: str) -> None:
+    if require_number(sample, "width_m", here) < 0:
+        raise EpisodeError(f"{here}.width_m must not be negative")
+
+
 def _check_button(sample: dict, here: str) -> None:
     if not isinstance(require(sample, "pressed", here), bool):
         raise EpisodeError(f"{here}.pressed must be true or false")
@@ -117,7 +122,7 @@ def _check_frame(key: str):
     return check
 
 
-SENSOR_CHECKS = {"load_cell": _check_load, "gripper": _check_gripper, "button": _check_button}
+SENSOR_CHECKS = {"load_cell": _check_load, "gripper": _check_gripper, "button": _check_button, "gripper_width": _check_width}
 
 
 def validate_common(episode: Any, task_type: str, video_key: str) -> None:

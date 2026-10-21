@@ -14,11 +14,13 @@ from typing import Any
 from taskwitness.button import verify_button_press
 from taskwitness.config import parse_config
 from taskwitness.core import FAIL, PASS, UNKNOWN, EpisodeError
+from taskwitness.grasp import verify_grasp
 from taskwitness.oracle import verify_place
 
 VERIFIERS: dict[str, Callable[..., dict[str, Any]]] = {
     "place": verify_place,
     "button_press": verify_button_press,
+    "grasp": verify_grasp,
 }
 
 

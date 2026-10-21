@@ -28,6 +28,8 @@ jobs:
           taskwitness batch examples/synthetic --out report.json
           taskwitness batch examples/synthetic_button --out report-button.json
           taskwitness evaluate examples/synthetic examples/synthetic_button --out eval.json
+      - name: Simulation study smoke test
+        run: python examples/simulation/study.py --n 80 --planning-runs 2 --planning-trials 80 > /dev/null
 
   core-only:
     # The core must keep working with no third-party packages installed.

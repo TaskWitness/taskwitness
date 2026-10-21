@@ -26,6 +26,7 @@ from taskwitness.calibration import CameraCalibration, LoadCellCalibration, fit_
 from taskwitness.config import config_digest, load_config
 from taskwitness.core import FAIL, PASS, UNKNOWN, VERDICTS, verify_bundle_integrity
 from taskwitness.evaluate import Row, judge_audit, success_rate_estimate, summarize
+from taskwitness.simulation import PRESETS, SimConfig, preset, simulate_dataset
 from taskwitness.thresholds import calibrate_thresholds, window_stats
 
 EXIT_CODES = {PASS: 0, FAIL: 1, UNKNOWN: 2}
@@ -374,6 +375,37 @@ def cmd_calibrate_thresholds(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_simulate(args: argparse.Namespace) -> int:
+    from dataclasses import fields
+
+    types = {f.name: f.type for f in fields(SimConfig)}
+    overrides: dict[str, float] = {}
+    for spec in args.set or []:
+        key, sep, value = spec.partition("=")
+        if not sep or key not in types:
+            raise AdapterError(f"--set must look like NAME=VALUE with NAME one of {sorted(types)}, got {spec!r}")
+        try:
+            overrides[key] = float(value)
+        except ValueError:
+            raise AdapterError(f"--set {key}: {value!r} is not a number") from None
+    mix = read_json(args.mix) if args.mix else None
+    cfg = preset(args.preset, **overrides)
+    episodes = simulate_dataset(args.kind, args.n, args.seed, cfg, mix)
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    for ep in episodes:
+        ep["tags"]["rig"] = args.preset
+        (out / f"{ep['episode_id']}.json").write_text(json.dumps(ep, indent=1) + "\n", encoding="utf-8")
+    modes: dict[str, int] = {}
+    for ep in episodes:
+        modes[ep["tags"]["failure_mode"]] = modes.get(ep["tags"]["failure_mode"], 0) + 1
+    passes = sum(ep["label"]["verdict"] == "PASS" for ep in episodes)
+    _say(f"wrote {len(episodes)} simulated {args.kind} episodes to {out} ({passes} true PASS, {len(episodes) - passes} true FAIL)")
+    _say("failure modes: " + ", ".join(f"{k} {v}" for k, v in sorted(modes.items())))
+    _say("SYNTHETIC: results on these episodes show how the method behaves under the simulator's assumptions, not on a real rig")
+    return 0
+
+
 def _parse_bool(text: str) -> bool:
     if text.lower() in ("true", "yes", "1"):
         return True
@@ -591,6 +623,16 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--lenient", action="store_true", help="skip malformed log lines instead of failing")
     p.add_argument("--out")
     p.set_defaults(func=cmd_ingest)
+
+    p = sub.add_parser("simulate", help="generate physics-based synthetic episodes with known ground truth")
+    p.add_argument("kind", choices=["place", "button_press"])
+    p.add_argument("--n", type=int, default=500, help="number of episodes")
+    p.add_argument("--seed", type=int, default=1)
+    p.add_argument("--preset", choices=sorted(PRESETS), default="lab", help="rig quality")
+    p.add_argument("--set", action="append", help="override one setting, e.g. load_noise_g=2.0; repeatable")
+    p.add_argument("--mix", help="JSON {failure_mode: weight} replacing the default mix")
+    p.add_argument("--out", required=True, help="directory for the episode files")
+    p.set_defaults(func=cmd_simulate)
 
     p = sub.add_parser("track", help="track a coloured object or marker in a video (needs [vision] extra)")
     p.add_argument("video")
