@@ -1,45 +1,37 @@
-# WitnessNode hardware notes (draft)
+**简体中文** · [English](README.en.md)
 
-Status: **design notes only.** No firmware, adapter or wiring has been built or
-tested yet. Part choices below are starting points for the Day 8-30 experiment,
-not a validated bill of materials.
+# WitnessNode 硬件说明（草案）
 
-## Goal
+状态：**仅为设计笔记。** 固件、适配器和接线都还没有制作或测试。下面的器件选择是第 8–30 天实验的起点，而不是经过验证的物料清单。
 
-The cheapest sensor setup that gives `PlaceOracle` independent physical evidence:
-a rigid plate under the target zone that reports weight over time on a clock
-shared with the camera.
+## 目标
 
-## First prototype
+用最便宜的传感器方案，为 `PlaceOracle` 提供独立的物理证据：目标区下方一块刚性称重板，在与相机共享的时钟上持续报告重量。
 
-| Part | Purpose | Notes |
+## 第一版原型
+
+| 部件 | 用途 | 说明 |
 | --- | --- | --- |
-| Bar load cell (1-5 kg range) | Measures weight on the target plate | Pick a range close to the heaviest test object for resolution. |
-| HX711 24-bit ADC breakout | Reads the load cell | Common, cheap; 10 or 80 samples/s modes. |
-| Microcontroller with USB serial (e.g. ESP32 or Arduino-class board) | Streams timestamped readings | Off-the-shelf only; no custom PCB in the first 90 days. |
-| Rigid plate (acrylic/MDF) + spacer | Defines the target zone | Plate outline must match `task.target_zone` after calibration. |
-| Phone or USB camera | Video evidence | Fixed mount; record the plate and a visible clock or sync marker. |
+| 条形称重传感器（1–5 kg 量程） | 测量目标称重板上的重量 | 量程尽量接近最重的测试物体，以获得更好的分辨率。 |
+| HX711 24 位 ADC 模块 | 读取称重传感器 | 常见且便宜；支持 10 或 80 样本/秒。 |
+| 带 USB 串口的微控制器（如 ESP32 或 Arduino 类开发板） | 输出带时间戳的读数 | 只用现成开发板；前 90 天不做定制 PCB。 |
+| 刚性板（亚克力 / MDF）+ 垫片 | 定义目标区 | 标定后，板的轮廓要与 `task.target_zone` 一致。 |
+| 手机或 USB 相机 | 视频证据 | 固定安装；画面中需包含称重板和可见的时钟或同步标记。 |
 
-## Data contract
+## 数据约定
 
-The node should emit one line per sample, e.g. `t_ms,grams`, which a host-side
-adapter (not yet written) converts into `sensors.load_cell` entries of a
-`taskwitness.episode/v0` file. See [../docs/EVIDENCE_SPEC.md](../docs/EVIDENCE_SPEC.md).
+节点每个样本输出一行，例如 `t_ms,grams`，再由主机端适配器（尚未编写）转换为 `taskwitness.episode/v0` 文件中的 `sensors.load_cell` 条目。见 [../docs/EVIDENCE_SPEC.md](../docs/EVIDENCE_SPEC.md)。
 
-## Calibration checklist
+## 校准清单
 
-1. Tare with the empty plate, then scale with at least two reference masses.
-2. Record the calibration masses and residual error with each experiment batch.
-3. Measure noise (std-dev) on an empty settled plate; `stability_std_g` must sit
-   comfortably above it.
-4. Measure the time from object release to a settled reading; `settle_window_s`
-   and the episode end time must allow for it.
-5. Synchronise clocks: start each episode with a tap on the plate visible to the
-   camera, and align the load spike to the video frame.
+1. 空板去皮，然后用至少两个标准质量块标定量程。
+2. 每批实验都记录标定用的质量块和残余误差。
+3. 在空载且稳定的称重板上测量噪声（标准差）；`stability_std_g` 必须明显高于它。
+4. 测量从释放物体到读数稳定所需的时间；`settle_window_s` 和回合结束时间必须留出这段时间。
+5. 同步时钟：每个回合开始时在称重板上轻敲一下，让相机拍到，并把称重尖峰与视频帧对齐。
 
-## Known limitations
+## 已知限制
 
-- A single plate cannot tell *where* on the plate the object rests; the plate
-  outline itself is the zone.
-- Vibration from the robot base can couple into the load cell; isolate the plate.
-- Objects lighter than a few grams are below the default `empty_threshold_g`.
+- 单块称重板无法区分物体落在板上的*哪个位置*；板的轮廓本身就是目标区。
+- 机器人底座的振动可能耦合进称重传感器，需要对称重板做隔振。
+- 比默认 `empty_threshold_g` 更轻的物体（几克以内）无法被检测到。

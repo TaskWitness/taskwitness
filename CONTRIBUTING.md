@@ -1,16 +1,16 @@
-# Contributing
+**简体中文** · [English](CONTRIBUTING.en.md)
 
-Thanks for helping check reality.
+# 参与贡献
 
-## Most wanted
+感谢你帮助我们核实现实。
 
-1. **Real experiments.** Labeled place attempts with load-cell data in the
-   [episode format](docs/EVIDENCE_SPEC.md). Failures of TaskWitness are as
-   valuable as successes; please include them.
-2. **Reproductions** on your own rig, with the config you used.
-3. **Bug reports** with the episode file that triggers the problem.
+## 最需要的贡献
 
-## Development
+1. **真实实验。** 按[证据规范](docs/EVIDENCE_SPEC.md)整理的、带称重数据和人工标签的放置任务记录。TaskWitness 判错的案例与判对的案例同样有价值，请务必包含。
+2. **在你自己的设备上复现**，并附上所用配置。
+3. **Bug 报告**，请附上能触发问题的 episode 文件。
+
+## 开发
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
@@ -18,12 +18,10 @@ pip install -e '.[dev]'
 pytest -q
 ```
 
-If you change `examples/synthetic/generate.py`, regenerate the episodes with
-`python examples/synthetic/generate.py` and commit the JSON files; CI checks
-they are in sync.
+如果你修改了 `examples/synthetic/generate.py`，请运行 `python examples/synthetic/generate.py` 重新生成 episode 并提交 JSON 文件；CI 会检查两者是否同步。
 
-## Ground rules
+## 基本规则
 
-- Do not describe planned features as existing ones in docs or READMEs.
-- Keep synthetic data clearly marked as synthetic.
-- Verdict logic changes need a test showing the case they fix.
+- 不要在文档或 README 中把计划中的功能写成已有功能。
+- 合成数据必须明确标注为合成。
+- 修改判定逻辑时，需要附带一个展示所修复情形的测试。

@@ -130,7 +130,7 @@ taskwitness check bundle.json --episode examples/synthetic/02_not_released.json
 
 </details>
 
-📄 数据格式：[docs/EVIDENCE_SPEC.md](docs/EVIDENCE_SPEC.md)（英文） · 🏗️ 架构：[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)（英文）
+📄 数据格式：[docs/EVIDENCE_SPEC.md](docs/EVIDENCE_SPEC.md) · 🏗️ 架构：[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ---
 
@@ -157,7 +157,7 @@ taskwitness check bundle.json --episode examples/synthetic/02_not_released.json
 | **D31–60** | WitnessNode 传感器盒、一个评测框架插件、社区机器人（如 SO-101） | ≥2 个外部真实机器人环境运行实验 |
 | **D61–90** | 公开真实实验结果，发布 WitnessBench 首版 | ≥1 份外部独立复现 |
 
-详情：[docs/ROADMAP_90_DAYS.zh-CN.md](docs/ROADMAP_90_DAYS.zh-CN.md) · 硬件说明：[hardware/README.md](hardware/README.md)（英文）
+详情：[docs/ROADMAP_90_DAYS.md](docs/ROADMAP_90_DAYS.md) · 硬件说明：[hardware/README.md](hardware/README.md)
 
 ---
 
@@ -180,7 +180,7 @@ taskwitness check bundle.json --episode examples/synthetic/02_not_released.json
 
 有机械臂、称重传感器，甚至只有手机和厨房秤？欢迎提 Issue。
 
-参见 [CONTRIBUTING.md](CONTRIBUTING.md)（英文）。
+参见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 ---
 

@@ -1,59 +1,54 @@
-# Architecture
+**简体中文** · [English](ARCHITECTURE.en.md)
 
-## Position in the stack
+# 架构
+
+## 在技术栈中的位置
 
 ```
 ┌──────────────────────────────────────────────┐
-│ Robot / VLA policy / agent                    │  controls the arm, records video,
-│ (LeRobot, ROS 2, vendor stacks)               │  may self-report success
+│ 机器人 / VLA 策略 / 智能体                      │  控制机械臂、录制视频，
+│（LeRobot、ROS 2、厂商软件栈）                   │  可能自报“成功”
 └──────────────┬───────────────────────────────┘
-               │ episode: task spec + sensor streams + video observations
+               │ episode：任务描述 + 传感器数据流 + 视频观测
 ┌──────────────▼───────────────────────────────┐
 │ TaskWitness Core                              │
-│  oracles ─► fusion ─► verdict + evidence      │
+│  Oracle ─► 证据融合 ─► 判定 + 证据             │
 └──────────────┬───────────────────────────────┘
-               │ PASS / FAIL / UNKNOWN + evidence bundle
+               │ PASS / FAIL / UNKNOWN + 证据包
 ┌──────────────▼───────────────────────────────┐
-│ Evaluation harness, CI, dashboards, humans    │
+│ 评测框架、CI、看板、人工复核                    │
 └──────────────────────────────────────────────┘
 ```
 
-TaskWitness is deliberately independent of the policy under test: it never
-receives policy internals, never sends commands, and ignores the policy's own
-success claim when deciding.
+TaskWitness 刻意独立于被测策略：它不接触策略内部状态，不发送任何控制命令，判定时也忽略策略自报的成功结果。
 
-## Components (v0.1)
+## v0.1 的组成
 
-| Module | Responsibility |
+| 模块 | 职责 |
 | --- | --- |
-| `oracle.validate_episode` | Reject malformed episodes before judging. |
-| `oracle.sensor_oracle` | Classify the final settle window of the load cell: `PLACED`, `ABSENT`, `PARTIAL_LOAD`, `OVERLOAD`, `UNSTABLE`, `NO_DATA`. |
-| `oracle.gripper_oracle` | Final gripper state: `OPEN`, `CLOSED`, `NO_DATA`. |
-| `oracle.video_oracle` | Classify confident end-of-episode object positions: `IN_ZONE`, `OUT_OF_ZONE`, `LOW_CONFIDENCE`, `NO_DATA`. |
-| `oracle.fuse` | Rule table that turns oracle states into a verdict with human-readable reasons. |
-| `oracle.verify_place` | Run everything and assemble the evidence bundle. |
-| `oracle.verify_bundle_integrity` | Recompute digests to detect edited bundles or mismatched inputs. |
-| `cli` | `verify`, `batch`, `check`. |
+| `oracle.validate_episode` | 判定前拒绝格式错误的 episode。 |
+| `oracle.sensor_oracle` | 对称重数据的最终稳定窗口分类：`PLACED`、`ABSENT`、`PARTIAL_LOAD`、`OVERLOAD`、`UNSTABLE`、`NO_DATA`。 |
+| `oracle.gripper_oracle` | 夹爪最终状态：`OPEN`、`CLOSED`、`NO_DATA`。 |
+| `oracle.video_oracle` | 对回合末尾置信度足够的物体位置分类：`IN_ZONE`、`OUT_OF_ZONE`、`LOW_CONFIDENCE`、`NO_DATA`。 |
+| `oracle.fuse` | 把各 Oracle 状态转换成判定和可读理由的规则表。 |
+| `oracle.verify_place` | 运行全部流程并组装证据包。 |
+| `oracle.verify_bundle_integrity` | 重新计算摘要，检测被改动的证据包或不匹配的输入。 |
+| `cli` | `verify`、`batch`、`check`。 |
 
-## Design rules
+## 设计原则
 
-1. **Physical evidence is authoritative.** Video may veto a PASS, never create one.
-2. **UNKNOWN is a feature.** Missing, unsettled or contradictory evidence yields
-   UNKNOWN. The UNKNOWN rate is a metric to report alongside accuracy, not to hide.
-3. **Separation of evidence and labels.** Labels and robot claims are stripped
-   before any oracle runs.
-4. **Determinism.** Same input + same config + same version gives byte-identical
-   bundles, so bundles can be diffed, cached and re-verified by third parties.
-5. **No hidden thresholds.** The full config is embedded in every bundle.
+1. **物理证据优先。** 视频可以否决 PASS，但不能单独产生 PASS。
+2. **UNKNOWN 是功能。** 证据缺失、读数未稳定或相互矛盾时输出 UNKNOWN。UNKNOWN 率应与准确率一起报告，而不是被隐藏。
+3. **证据与标签分离。** 标签和机器人自报结果在任何 Oracle 运行之前就被剔除。
+4. **确定性。** 相同输入 + 相同配置 + 相同版本，得到逐字节相同的证据包，因此证据包可以对比、缓存，并由第三方重新验证。
+5. **没有隐藏阈值。** 完整配置写入每个证据包。
 
-## Planned extension points (not implemented)
+## 计划中的扩展点（尚未实现）
 
-These are directions, not features. Do not document them as available until they ship.
+以下是方向，不是功能。在发布之前，不要在文档中把它们写成“已有”。
 
-- **Sensor adapters**: read HX711 load-cell streams, gripper telemetry, timestamps.
-- **Video inference**: produce `object_xy` + confidence from raw frames instead of
-  requiring pre-computed positions.
-- **Calibration**: map camera coordinates to the plate frame; tare and scale the load cell.
-- **More oracles**: `ButtonPressOracle` (v0.2), then others driven by real demand.
-- **Framework plugins**: expose TaskWitness as a success detector / evaluator inside
-  existing robot-learning evaluation loops.
+- **传感器适配器**：读取 HX711 称重数据流、夹爪遥测数据与时间戳。
+- **视频推断**：从原始画面生成 `object_xy` 与置信度，而不是要求提前算好位置。
+- **校准**：相机坐标到称重板坐标系的映射；称重传感器的去皮与标定。
+- **更多 Oracle**：`ButtonPressOracle`（v0.2），之后由真实需求驱动。
+- **框架插件**：作为成功检测器 / 评估器接入现有的机器人学习评测流程。

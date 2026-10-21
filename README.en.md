@@ -130,7 +130,7 @@ All thresholds live in `PlaceOracleConfig` and are recorded in every bundle.
 
 </details>
 
-📄 Formats: [docs/EVIDENCE_SPEC.md](docs/EVIDENCE_SPEC.md) · 🏗️ Design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+📄 Formats: [docs/EVIDENCE_SPEC.en.md](docs/EVIDENCE_SPEC.en.md) · 🏗️ Design: [docs/ARCHITECTURE.en.md](docs/ARCHITECTURE.en.md)
 
 ---
 
@@ -157,7 +157,7 @@ All thresholds live in `PlaceOracleConfig` and are recorded in every bundle.
 | **D31–60** | WitnessNode sensor box, one framework plugin, community robots (e.g. SO-101) | 2+ external real-robot setups run it |
 | **D61–90** | Publish real-data results, first WitnessBench release | 1+ independent external reproduction |
 
-Details: [docs/ROADMAP_90_DAYS.zh-CN.md](docs/ROADMAP_90_DAYS.zh-CN.md) (Chinese) · Hardware notes: [hardware/README.md](hardware/README.md)
+Details: [docs/ROADMAP_90_DAYS.en.md](docs/ROADMAP_90_DAYS.en.md) · Hardware notes: [hardware/README.en.md](hardware/README.en.md)
 
 ---
 
@@ -180,7 +180,7 @@ The most valuable contribution right now is **a real experiment**: labeled place
 
 Have a robot arm, a load cell, or just a phone and a kitchen scale? Open an issue.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+See [CONTRIBUTING.en.md](CONTRIBUTING.en.md).
 
 ---
 

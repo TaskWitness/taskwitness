@@ -1,9 +1,10 @@
-# Evidence specification (v0)
+**简体中文** · [English](EVIDENCE_SPEC.en.md)
 
-Two JSON documents: the **episode** (input) and the **evidence bundle** (output).
-Both are versioned by their `schema` field. v0 may change without notice until v1.
+# 证据规范（v0）
 
-## Episode: `taskwitness.episode/v0`
+两种 JSON 文档：**episode**（输入）和**证据包**（输出）。两者都由 `schema` 字段标注版本。在 v1 之前，v0 可能不经通知就发生变化。
+
+## Episode：`taskwitness.episode/v0`
 
 ```json
 {
@@ -20,43 +21,38 @@ Both are versioned by their `schema` field. v0 may change without notice until v
     "load_cell": [{"t": 0.0, "grams": 0.1}],
     "gripper": [{"t": 0.0, "state": "closed"}]
   },
-  "label": {"verdict": "PASS", "note": "independent human label"}
+  "label": {"verdict": "PASS", "note": "独立人工标注"}
 }
 ```
 
-| Field | Required | Notes |
+| 字段 | 是否必需 | 说明 |
 | --- | --- | --- |
-| `schema`, `episode_id`, `task` | yes | `task.type` must be `place` for `PlaceOracle`. |
-| `task.object.mass_g` | yes | Positive. Used for load matching. |
-| `task.target_zone` | yes | Axis-aligned box in the same frame as `video[].object_xy` (metres in the examples). The load cell is assumed to sit under exactly this zone. |
-| `claim` | no | The robot's own claim. Never used to decide. |
-| `video` | no | Pre-computed object positions with confidence in [0, 1]. |
-| `sensors.load_cell` | no* | Grams on the target plate. *Without it the verdict is always UNKNOWN. |
-| `sensors.gripper` | no | `open` / `closed`. |
-| `label` | no | Ground truth for evaluation. Stripped before judging and excluded from `evidence_sha256`. |
+| `schema`、`episode_id`、`task` | 是 | 使用 `PlaceOracle` 时，`task.type` 必须为 `place`。 |
+| `task.object.mass_g` | 是 | 正数，用于与称重读数比对。 |
+| `task.target_zone` | 是 | 与 `video[].object_xy` 同一坐标系下的轴对齐矩形（样例中单位为米）。假定称重传感器正好位于该区域下方。 |
+| `claim` | 否 | 机器人自报的结果，从不用于判定。 |
+| `video` | 否 | 预先计算好的物体位置，置信度范围 [0, 1]。 |
+| `sensors.load_cell` | 否* | 目标称重板上的重量（克）。*没有它时，判定永远是 UNKNOWN。 |
+| `sensors.gripper` | 否 | `open` / `closed`。 |
+| `label` | 否 | 用于评测的真值。判定前被剔除，也不计入 `evidence_sha256`。 |
 
-Timestamps `t` are seconds on a shared clock. The episode ends at the latest
-timestamp across all streams. Extra fields are allowed and are covered by the
-evidence digest.
+时间戳 `t` 的单位是秒，且各数据流使用同一时钟。回合在所有数据流中最晚的时间戳处结束。允许存在额外字段，它们也会被证据摘要覆盖。
 
-## Evidence bundle: `taskwitness.evidence/v0`
+## 证据包：`taskwitness.evidence/v0`
 
-| Field | Meaning |
+| 字段 | 含义 |
 | --- | --- |
-| `verdict` | `PASS`, `FAIL` or `UNKNOWN`. |
-| `reasons` | Ordered human-readable reasons; the first is the headline. |
-| `claim.robot_claimed_success` | Copied from the episode. |
-| `claim.contradicted` | True when the claim is `true` and the verdict is FAIL, or the claim is `false` and the verdict is PASS. |
-| `comparison.vision_only_verdict` | What a judge using only the video oracle would say. For analysis; not used in the verdict. |
-| `oracles[]` | Each oracle's `state`, `detail` and raw `measurements` (window, mean, std, ratios, ...). |
-| `timeline[]` | Key events: gripper open, load on/off, last sensor sample. |
-| `config` | Every threshold used. |
-| `integrity.evidence_sha256` | SHA-256 of the canonical JSON of the episode minus `label`. |
-| `integrity.bundle_sha256` | SHA-256 of the canonical JSON of the bundle minus this field. |
+| `verdict` | `PASS`、`FAIL` 或 `UNKNOWN`。 |
+| `reasons` | 按顺序排列的可读理由，第一条是结论摘要。 |
+| `claim.robot_claimed_success` | 从 episode 复制而来。 |
+| `claim.contradicted` | 自报为 `true` 而判定为 FAIL，或自报为 `false` 而判定为 PASS 时为 true。 |
+| `comparison.vision_only_verdict` | 仅使用视频 Oracle 的判定者会给出的结论。用于分析，不参与判定。 |
+| `oracles[]` | 每个 Oracle 的 `state`、`detail` 和原始 `measurements`（窗口、均值、标准差、比例等）。 |
+| `timeline[]` | 关键事件：夹爪张开、称重上升/下降、最后一个传感器样本。 |
+| `config` | 使用的所有阈值。 |
+| `integrity.evidence_sha256` | 去掉 `label` 后的 episode 规范化 JSON 的 SHA-256。 |
+| `integrity.bundle_sha256` | 去掉该字段后的证据包规范化 JSON 的 SHA-256。 |
 
-Canonical JSON: keys sorted, separators `,` and `:`, UTF-8, no extra whitespace.
+规范化 JSON：键排序，分隔符为 `,` 和 `:`，UTF-8 编码，无多余空白。
 
-`taskwitness check bundle.json --episode episode.json` recomputes both digests.
-The digests detect accidental or naive edits; they are not signatures. Anyone can
-recompute them, so they do not prove *who* produced a bundle. Signed bundles are
-future work.
+`taskwitness check bundle.json --episode episode.json` 会重新计算两个摘要。摘要能发现意外或简单的改动，但它不是签名：任何人都能重新计算，因此无法证明证据包由谁生成。带签名的证据包属于未来工作。
