@@ -177,6 +177,7 @@ taskwitness check bundle.json --episode examples/synthetic/02_not_released.json
 | `evaluate` | 对照人工标签：条件 / 绝对漏判、误判失败、UNKNOWN 率（附 Wilson 区间）、审计覆盖率、按失败类型分层、精确 McNemar 检验，以及**任意时刻有效的序贯检验**（可随时查看、随时停止，错误率仍受控） |
 | `audit` | 在同一批回合上审计外部判定器（Robometer、TOPReward、VLM、操作员）：平衡准确率、ROC-AUC、校准误差、成功偏差 |
 | `estimate` | 成功率区间：仅用标签（Wilson 与有限样本）、预测增强推断（渐近与有限样本）。如实提示：判定器不够准、回合不够多时，预测增强区间反而比只用标签更宽 |
+| `lerobot` | 把本地 LeRobot v3 数据集（例如从 Hugging Face 下载）按映射文件转成 TaskWitness episode：选取列作为传感器数据流，按片段拆分，读取人工标签，记录数据文件的 SHA-256（需 `[lerobot]`）；已在 REASSEMBLE 的 149 个回合、143 万帧上验证 |
 | `simulate` | 生成带已知真值的物理仿真回合（放置 / 按钮），可调噪声、掉线、跟踪器失效、时钟偏差；见 [仿真研究](docs/SIMULATION.md) |
 | `keygen` / `sign` / `verify-signature` | 证据包 Ed25519 签名（需 `[sign]`） |
 
@@ -186,6 +187,7 @@ taskwitness check bundle.json --episode examples/synthetic/02_not_released.json
 pip install -e '.[vision]'    # 视频跟踪：numpy + OpenCV
 pip install -e '.[sign]'      # 签名：cryptography
 pip install -e '.[inspect]'   # Inspect Robots 集成
+pip install -e '.[lerobot]'   # 读取 LeRobot v3 数据集：pyarrow
 pip install -e '.[all]'
 ```
 
@@ -209,21 +211,22 @@ TaskWitness 的设计依据近期文献（真实数据测试见 [docs/REAL_DATA.
 
 ---
 
-## 📦 当前状态：v0.4
+## 📦 当前状态：v0.5
 
-**如实说明：pre-alpha。** 仓库中的样例全部为合成数据，尚无真实机器人、相机或称重传感器的测量结果。
+**如实说明：pre-alpha。** 仓库中的样例全部为合成数据。唯一的真实数据检验是在公开的 REASSEMBLE 数据集上对 GraspOracle 做的（见 [docs/REAL_DATA.md](docs/REAL_DATA.md)）；称重传感器和按钮开关还没有任何真实测量结果。
 
 | ✅ 已实现 | 🛠️ 尚未实现 |
 | --- | --- |
 | `PlaceOracle`、`ButtonPressOracle`、`GraspOracle` | WitnessNode 固件与实时串口记录器 |
-| 严格的 episode 校验（拒绝 NaN / 无穷大，精确指出出错字段） | LeRobot 数据集适配器 |
+| 严格的 episode 校验（拒绝 NaN / 无穷大，精确指出出错字段） | |
 | 称重与相机校准、保形阈值校准、日志导入、颜色块视频跟踪 | 基于学习或 VLM 的视频检测器 |
 | `evaluate` / `audit` / `estimate`：Wilson 区间、McNemar、序贯检验、有限样本区间 | 称重 / 按钮 Oracle 的真实硬件结果（目前没有公开数据集包含这些传感器） |
 | 物理仿真器与仿真研究（`simulate`、`examples/simulation/study.py`） | |
 | 在真实数据（REASSEMBLE）上测试 GraspOracle | |
 | Inspect Robots scorer（已在真实评测流程中测试） | |
 | 确定性、防篡改证据包与可选签名 | |
-| 165 项测试（含对统计保证的模拟验证）、CI | |
+| LeRobot v3 数据集适配器（在真实数据集上验证，结果与独立脚本逐项一致） | |
+| 185 项测试（含对统计保证的模拟验证）、CI | |
 
 ---
 
@@ -244,7 +247,7 @@ TaskWitness 的设计依据近期文献（真实数据测试见 [docs/REAL_DATA.
 
 | 名称 | 内容 | 状态 |
 | --- | --- | --- |
-| **TaskWitness Core** | 开源验证 SDK | v0.4（本仓库） |
+| **TaskWitness Core** | 开源验证 SDK | v0.5（本仓库） |
 | **WitnessNode** | 低成本传感器盒 | 设计草案 |
 | **WitnessKit** | 真实物理实验工具包 | 规划中 |
 | **WitnessBench** | 社区测试数据集 | 规划中 |

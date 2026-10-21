@@ -60,8 +60,10 @@ TaskWitness 的主要 Oracle 读取目标下方的称重传感器，或按钮自
 
 ## 复现
 
+脚本通过 TaskWitness 自己的 LeRobot 适配器（`taskwitness lerobot`）读取数据集，得到的数字与上文完全一致，因此它也是对适配器在一个真实的 149 回合、143 万帧数据集上的检验。
+
 ```bash
-pip install pyarrow numpy
+pip install "taskwitness[lerobot]"
 python examples/real_data/reassemble_grasp.py --download data/reassemble     # 约 450 MB，无需视频
 python examples/real_data/reassemble_grasp.py --root data/reassemble                       # 固定稳定性阈值
 python examples/real_data/reassemble_grasp.py --root data/reassemble --stability-alpha 0.1 # 保形校准，仅用训练集

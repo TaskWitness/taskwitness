@@ -82,8 +82,10 @@ sensor. See [SIMULATION.en.md](SIMULATION.en.md).
 
 ## Reproduce
 
+The script reads the dataset through TaskWitness's own LeRobot adapter (`taskwitness lerobot`), which reproduces the numbers above exactly, so it doubles as a check of the adapter on a real 149-episode, 1.4 M-frame dataset.
+
 ```bash
-pip install pyarrow numpy
+pip install "taskwitness[lerobot]"
 python examples/real_data/reassemble_grasp.py --download data/reassemble     # ~450 MB, no videos
 python examples/real_data/reassemble_grasp.py --root data/reassemble                       # fixed stability threshold
 python examples/real_data/reassemble_grasp.py --root data/reassemble --stability-alpha 0.1 # conformal, train only

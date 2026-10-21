@@ -127,6 +127,16 @@ taskwitness audit --judge robometer.csv --episodes episodes --by failure_mode --
 
 可以得到它相对于你的标签的误判通过、平衡准确率、ROC-AUC、校准误差和成功偏差，以及与 TaskWitness 的成对比较。
 
+## 如果你的试验已经在 LeRobot 数据集中
+
+可以不做第 3 到 5 步，而是把数据集的列映射成传感器数据流，然后转换（需要 `pip install "taskwitness[lerobot]"`，以及数据集的 `meta/` 和 `data/` 目录；不会读取视频）：
+
+```bash
+taskwitness lerobot path/to/dataset --mapping mapping.json --out episodes
+```
+
+映射文件指定哪些列成为 `load_cell`、`gripper_width`、`button` 或 `gripper`，可选的 `segments` 列（把一段长录像按动作拆成多个 episode）、人工标签列，以及任务文本过滤。REASSEMBLE 的完整示例在 `examples/lerobot/reassemble_pick_mapping.json`（其中物体宽度区间只是占位值：请填入你的物体的真实区间，或像 `examples/real_data/reassemble_grasp.py` 那样按物体分别设定）；字段说明在 `taskwitness.integrations.lerobot` 模块的文档字符串中。每个 episode 都记录其来源数据文件的 SHA-256。若要在拼接的相机视频里跟踪某个回合那一段中的物体，用 `taskwitness track VIDEO --start-s S --end-s E`，时间段取自 `LeRobotDataset.video_span` 的返回值。
+
 ## 9. 可选：为证据包签名
 
 ```bash

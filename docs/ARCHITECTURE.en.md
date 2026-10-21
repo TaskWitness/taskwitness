@@ -58,6 +58,7 @@ raw logs ──calibrate──► calibration files
 | `inference` | Anytime-valid sequential test (betting e-process), Waudby-Smith-Ramdas intervals, finite-sample prediction-powered inference, split-conformal bound. Pure Python; the guarantees are checked by simulation in the tests. |
 | `thresholds` | Conformal calibration of the PlaceOracle thresholds from known-good recordings. |
 | `signing` | Optional (`[sign]`): Ed25519 signatures over bundles, with explicit key pinning. |
+| `integrations.lerobot` | Reads local LeRobot v3 datasets with pyarrow (optional `[lerobot]`) and turns chosen columns into TaskWitness episodes, split by segment, with the human label and SHA-256 provenance of the data files. Also gives each episode's slice of the concatenated camera videos. Checked on REASSEMBLE. |
 | `integrations.inspect_robots` | `taskwitness` and `taskwitness_unknown` scorers for Inspect Robots, registered through entry points. |
 | `cli` | All commands. |
 
@@ -83,7 +84,7 @@ The core (`core`, oracles, `api`, `config`, `calibration`, `adapters`,
 These are directions, not features.
 
 - WitnessNode firmware and a live serial recorder (today: any logger that writes `t_ms,value`).
-- A LeRobot dataset adapter (today: export per-episode scores and use `audit`).
+- Writing results back into a LeRobot dataset, and reading datasets written by LeRobot versions other than v3.
 - Learned or VLM-based video detectors (today: a colour-blob baseline).
 - STEP's exact stopping rule, N-SCORE's partial-credit metrics and SureSim's paired real/simulation rectifier (today: a simpler sequential test for paired binary outcomes).
 

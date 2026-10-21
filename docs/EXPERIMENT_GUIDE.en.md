@@ -167,6 +167,24 @@ taskwitness audit --judge robometer.csv --episodes episodes --by failure_mode --
 You get its false passes, balanced accuracy, ROC-AUC, calibration error and
 success bias against your labels, plus a paired comparison with TaskWitness.
 
+## If your trials are already in a LeRobot dataset
+
+Instead of steps 3 to 5, map the dataset's columns to sensor streams and convert it
+(needs `pip install "taskwitness[lerobot]"` and the dataset's `meta/` and `data/` folders; the videos are not read):
+
+```bash
+taskwitness lerobot path/to/dataset --mapping mapping.json --out episodes
+```
+
+The mapping names the columns that become `load_cell`, `gripper_width`, `button` or
+`gripper`, an optional column that splits a long recording into one episode per
+action (`segments`), the human label column and a task-text filter. A worked example
+for REASSEMBLE is in `examples/lerobot/reassemble_pick_mapping.json` (its object band is a placeholder: set your object's real band, or per-object bands as `examples/real_data/reassemble_grasp.py` does); the field list
+is in the module docstring of `taskwitness.integrations.lerobot`. Each episode records
+the SHA-256 of the data files it came from. To track an object in the episode's slice
+of a concatenated camera video, use `taskwitness track VIDEO --start-s S --end-s E`
+with the span that `LeRobotDataset.video_span` returns.
+
 ## 9. Optional: sign the bundles
 
 ```bash

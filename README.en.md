@@ -177,6 +177,7 @@ record logs ─► calibrate ─► track ─► ingest ─► verify / evaluate
 | `evaluate` | Against human labels: conditional and absolute misses, false fails, UNKNOWN rate (with Wilson intervals), audit coverage, per-failure-mode strata, exact McNemar test, and an **anytime-valid sequential test** (look whenever you like, stop whenever you like, the error rate stays controlled) |
 | `audit` | Audit an external judge (Robometer, TOPReward, a VLM, an operator) on the same episodes: balanced accuracy, ROC-AUC, calibration error, success bias |
 | `estimate` | Success-rate intervals: labels only (Wilson and finite-sample) and prediction-powered (asymptotic and finite-sample). Reports honestly that with an inaccurate judge or few episodes the prediction-powered interval is wider than labels alone |
+| `lerobot` | Turn a local LeRobot v3 dataset (for example downloaded from Hugging Face) into TaskWitness episodes with a mapping file: pick columns as sensor streams, split by segment, read the human label, record the SHA-256 of the data files (needs `[lerobot]`); checked on REASSEMBLE, 149 episodes and 1.4 M frames |
 | `simulate` | Generate physics-based place / button episodes with known ground truth, with adjustable noise, dropouts, tracker failures and clock offsets; see the [simulation study](docs/SIMULATION.en.md) |
 | `keygen` / `sign` / `verify-signature` | Ed25519 signatures for bundles (needs `[sign]`) |
 
@@ -186,6 +187,7 @@ The full protocol is in the [experiment guide](docs/EXPERIMENT_GUIDE.en.md).
 pip install -e '.[vision]'    # video tracking: numpy + OpenCV
 pip install -e '.[sign]'      # signatures: cryptography
 pip install -e '.[inspect]'   # Inspect Robots integration
+pip install -e '.[lerobot]'   # read LeRobot v3 datasets: pyarrow
 pip install -e '.[all]'
 ```
 
@@ -209,21 +211,22 @@ TaskWitness's design follows recent work (the test on real data is in [docs/REAL
 
 ---
 
-## 📦 What's in v0.4
+## 📦 What's in v0.5
 
-**Honest status: pre-alpha.** Every example in this repo is synthetic; no result here is yet a measurement from a real robot, camera or load cell.
+**Honest status: pre-alpha.** Every example in this repo is synthetic. The only test on real data is the GraspOracle on the public REASSEMBLE dataset (see [docs/REAL_DATA.en.md](docs/REAL_DATA.en.md)); there is still no real measurement from a load cell or a button switch.
 
 | ✅ Available now | 🛠️ Not built yet |
 | --- | --- |
 | `PlaceOracle`, `ButtonPressOracle`, `GraspOracle` | WitnessNode firmware and a live serial recorder |
-| Strict episode validation (rejects NaN/inf, points at the bad field) | LeRobot dataset adapter |
+| Strict episode validation (rejects NaN/inf, points at the bad field) | |
 | Load-cell and camera calibration, conformal thresholds, log ingestion, colour-blob video tracking | Learned or VLM-based video detectors |
 | `evaluate` / `audit` / `estimate`: Wilson intervals, McNemar, sequential test, finite-sample intervals | Real-hardware results for the load-cell and button oracles (no public dataset records those sensors) |
 | Physics-based simulator and simulation study (`simulate`, `examples/simulation/study.py`) | |
 | GraspOracle tested on real data (REASSEMBLE) | |
 | Inspect Robots scorers (tested in a real eval loop) | |
 | Deterministic, tamper-evident bundles with optional signatures | |
-| 165 tests (including simulations of the statistical guarantees), CI | |
+| LeRobot v3 dataset adapter (checked on a real dataset: results identical to the stand-alone script) | |
+| 185 tests (including simulations of the statistical guarantees), CI | |
 
 ---
 
@@ -244,7 +247,7 @@ Details: [docs/ROADMAP_90_DAYS.en.md](docs/ROADMAP_90_DAYS.en.md) · Hardware no
 
 | Name | What | Status |
 | --- | --- | --- |
-| **TaskWitness Core** | Open-source verification SDK | v0.4 (this repo) |
+| **TaskWitness Core** | Open-source verification SDK | v0.5 (this repo) |
 | **WitnessNode** | Low-cost sensor box | design notes |
 | **WitnessKit** | Physical experiment kit | planned |
 | **WitnessBench** | Community test dataset | planned |

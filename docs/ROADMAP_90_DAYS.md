@@ -32,7 +32,7 @@
 
 - [ ] WitnessNode 接线图、BOM、固件开源
 - [x] 一个评测框架插件，以外部结果判定器方式接入（Inspect Robots scorer，v0.2）
-- [ ] LeRobot 数据集适配器（目前可导出逐回合分数后用 `taskwitness audit` 对照）
+- [x] LeRobot 数据集适配器（v0.5，`taskwitness lerobot`；已在 REASSEMBLE 上验证）
 - [ ] 联系拥有 SO-101 等开源机械臂的开发者，提供复现脚本与传感器方案
 - [x] `ButtonPressOracle`（v0.2）
 

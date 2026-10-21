@@ -56,6 +56,7 @@ TaskWitness 刻意独立于被测策略：它不接触策略内部状态，不�
 | `inference` | 任意时刻有效的序贯检验（下注式 e-过程）、Waudby-Smith–Ramdas 区间、有限样本预测增强推断、分裂保形上界。纯 Python；统计保证由测试中的模拟检验。 |
 | `thresholds` | 用已知正常的录像对 PlaceOracle 阈值做保形校准。 |
 | `signing` | 可选（`[sign]`）：对证据包做 Ed25519 签名，需显式固定公钥。 |
+| `integrations.lerobot` | 用 pyarrow 读取本地 LeRobot v3 数据集（可选 `[lerobot]`），把选定的列转成 TaskWitness episode，按片段拆分，带上人工标签和数据文件的 SHA-256 来源记录；还能给出每个回合在拼接相机视频中的片段。已在 REASSEMBLE 上验证。 |
 | `integrations.inspect_robots` | 为 Inspect Robots 提供 `taskwitness` 和 `taskwitness_unknown` 两个 scorer，通过 entry point 注册。 |
 | `cli` | 全部命令行命令。 |
 
@@ -75,7 +76,7 @@ TaskWitness 刻意独立于被测策略：它不接触策略内部状态，不�
 以下是方向，不是功能。
 
 - WitnessNode 固件与实时串口记录器（目前：任何能写出 `t_ms,value` 的记录工具即可）。
-- LeRobot 数据集适配器（目前：导出逐回合分数后使用 `audit`）。
+- 把结果写回 LeRobot 数据集，以及读取非 v3 版本的 LeRobot 数据集。
 - 基于学习或 VLM 的视频检测器（目前：颜色块基线）。
 - STEP 的精确停止规则、N-SCORE 的部分得分指标、SureSim 的真实/仿真成对修正项（目前：针对成对二元结果的较简单序贯检验）。
 

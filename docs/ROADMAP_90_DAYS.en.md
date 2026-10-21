@@ -32,7 +32,7 @@ Start date: 2026-10-21. Principle: every phase has checkable acceptance criteria
 
 - [ ] WitnessNode wiring diagram, BOM and firmware, all open source
 - [x] One evaluation-framework plugin, integrated as an external result judge (Inspect Robots scorers, v0.2)
-- [ ] LeRobot dataset adapter (today: export per-episode scores and compare with `taskwitness audit`)
+- [x] LeRobot dataset adapter (v0.5, `taskwitness lerobot`; checked on REASSEMBLE)
 - [ ] Reach developers with open-source arms such as SO-101 and give them reproduction scripts and the sensor design
 - [x] `ButtonPressOracle` (v0.2)
 

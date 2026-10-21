@@ -2,6 +2,23 @@
 
 # Changelog
 
+## 0.5.0 (2026-10-21)
+
+### Added
+
+- **LeRobot v3 dataset adapter**: `taskwitness lerobot ROOT --mapping map.json --out DIR` (optional `[lerobot]` = pyarrow). It reads the dataset's parquet files directly, needs no `lerobot` package and does not read the videos. It maps chosen columns to load-cell, gripper-width, button and gripper streams, can split a long recording into one episode per action by a column, reads the human label, filters by a task-text prefix, and records the SHA-256 of the data files. `LeRobotDataset.video_span` gives each episode's slice of the concatenated camera videos.
+- `taskwitness track --start-s --end-s` and `read_video(start_s, end_s)`: track one slice of a concatenated video.
+- A worked mapping, `examples/lerobot/reassemble_pick_mapping.json`.
+
+### Verified
+
+- Run on the LeRobot port of REASSEMBLE (149 episodes, 1.4 M frames): 1,192 pick segments, 1,092 successes and 100 failures, identical to the earlier stand-alone script. `examples/real_data/reassemble_grasp.py` now reads through the adapter and gives the same results item for item (2 false passes among the 24 test failures).
+- Tests use a small LeRobot v3 dataset built by hand to the real layout (two data files, episodes with several segments), covering mapping validation, the version check, a missing data file and a non-contiguous episode.
+
+### Limits
+
+- One LeRobot episode must lie within one data file (true of files written by LeRobot's own tools); only v3 is supported; results are not written back into the dataset.
+
 ## 0.4.0 (2026-10-21)
 
 TaskWitness is now tested against a physics simulation and a real public dataset, and the oracles were fixed where those tests found problems.

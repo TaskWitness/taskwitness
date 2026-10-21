@@ -2,6 +2,23 @@
 
 # 更新记录
 
+## 0.5.0（2026-10-21）
+
+### 新增
+
+- **LeRobot v3 数据集适配器**：`taskwitness lerobot ROOT --mapping map.json --out DIR`（可选依赖 `[lerobot]` = pyarrow）。直接读取数据集的 parquet 文件，不需要 `lerobot` 软件包，也不读取视频；把选定的列映射成称重、夹爪宽度、按钮、夹爪状态数据流；可按列把一段长录像拆成每个动作一个 episode；读取人工标签；按任务文本前缀过滤；记录数据文件的 SHA-256。`LeRobotDataset.video_span` 给出每个回合在拼接相机视频中的片段。
+- `taskwitness track --start-s --end-s` 与 `read_video(start_s, end_s)`：跟踪拼接视频中的某一段。
+- 示例映射 `examples/lerobot/reassemble_pick_mapping.json`。
+
+### 验证
+
+- 适配器在 REASSEMBLE 的 LeRobot 移植版（149 个回合、143 万帧）上运行：得到 1,192 个抓取片段，1,092 个成功、100 个失败，与此前独立脚本完全一致。`examples/real_data/reassemble_grasp.py` 改为通过适配器读取数据，结果逐项相同（测试集 24 次失败中误判通过 2 次）。
+- 测试使用按真实布局手工构建的小型 LeRobot v3 数据集（跨两个数据文件、含多片段回合），覆盖映射校验、版本检查、缺失文件、非连续回合等错误情形。
+
+### 局限
+
+- 一个 LeRobot 回合必须位于同一个数据文件内（LeRobot 自己的工具写出的文件都满足）；不支持 v3 以外的版本；不会把结果写回数据集。
+
 ## 0.4.0（2026-10-21）
 
 用物理仿真和一个真实公开数据集检验 TaskWitness，并根据发现修正了 Oracle。
