@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 300" width="860" height="300" font-family="-apple-system,Segoe UI,Helvetica,Arial,PingFang SC,Microsoft YaHei,Noto Sans CJK SC,sans-serif" role="img" aria-label="Synthetic episode 03: video says the block is in the zone, the load cell shows it left the plate. Vision-only verdict PASS, TaskWitness verdict FAIL.">
+<style>
+.bg{fill:#ffffff} .fg{fill:#1f2328} .mut{fill:#656d76} .grid{stroke:#d0d7de} .ax{stroke:#8c959f}
+.load{stroke:#0969da} .vid{fill:#bf8700} .pass{fill:#1a7f37} .fail{fill:#cf222e} .card{fill:#f6f8fa;stroke:#d0d7de}
+@media (prefers-color-scheme: dark){
+.bg{fill:#0d1117} .fg{fill:#e6edf3} .mut{fill:#8d96a0} .grid{stroke:#30363d} .ax{stroke:#6e7681}
+.load{stroke:#4493f8} .vid{fill:#d29922} .pass{fill:#3fb950} .fail{fill:#f85149} .card{fill:#161b22;stroke:#30363d}
+}
+</style>
+<rect class="bg" width="860" height="300" rx="12"/>
+<text class="fg" x="70" y="34" font-size="17" font-weight="600">Did the robot really succeed?</text>
+<text class="mut" x="70" y="54" font-size="12">Synthetic episode 03 · block dropped on the plate, bounced off behind a fixture</text>
+<line class="grid" x1="70" x2="520" y1="92.7" y2="92.7" stroke-dasharray="4 4"/>
+<text class="mut" x="526" y="96.7" font-size="11">52 g</text>
+<line class="ax" x1="70" x2="520" y1="240" y2="240"/>
+<line class="ax" x1="70" x2="70" y1="70" y2="240"/>
+<text class="mut" x="62" y="244" font-size="11" text-anchor="end">0 g</text>
+<text class="mut" x="520" y="258" font-size="11" text-anchor="end">time (s) → 4.0</text>
+<text class="mut" x="70" y="258" font-size="11">0.0</text>
+<rect class="vid" x="250.0" y="268" width="270.0" height="8" rx="4" opacity="0.85"/>
+<text class="mut" x="70" y="276" font-size="11">video: block in zone</text>
+<polyline class="load" points="70.0,239.8 81.2,240.0 92.5,240.0 103.8,239.1 115.0,240.0 126.2,240.0 137.5,240.0 148.8,240.0 160.0,239.8 171.2,240.0 182.5,239.8 193.8,239.8 205.0,240.0 216.2,240.0 227.5,240.0 238.8,238.8 250.0,240.0 261.2,239.4 272.5,239.6 283.8,238.7 295.0,94.2 306.2,94.2 317.5,92.6 328.8,92.6 340.0,91.7 351.2,238.7 362.5,240.0 373.8,239.8 385.0,240.0 396.2,240.0 407.5,238.8 418.8,239.5 430.0,240.0 441.2,240.0 452.5,240.0 463.8,239.6 475.0,240.0 486.2,240.0 497.5,240.0 508.8,240.0 520.0,239.1" fill="none" stroke-width="2.5" stroke-linejoin="round"/>
+<text class="mut" x="356.9" y="155.0" font-size="11">load cell: plate empty again</text>
+<rect class="card" x="560" y="80" width="270" height="70" rx="10"/>
+<text class="mut" x="580" y="104" font-size="12">Vision-only judge</text>
+<text class="pass" x="580" y="136" font-size="24" font-weight="700">PASS ✓</text>
+<rect class="card" x="560" y="164" width="270" height="70" rx="10"/>
+<text class="mut" x="580" y="188" font-size="12">TaskWitness (physical evidence)</text>
+<text class="fail" x="580" y="220" font-size="24" font-weight="700">FAIL ✗</text>
+<text class="mut" x="560" y="258" font-size="11">“load cell shows the target plate is</text>
+<text class="mut" x="560" y="273" font-size="11">empty at end of episode”</text>
+</svg>
