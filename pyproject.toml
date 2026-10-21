@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "taskwitness"
+version = "0.1.0"
+description = "An independent, sensor-grounded verification layer for Physical AI."
+readme = "README.en.md"
+license = "Apache-2.0"
+requires-python = ">=3.10"
+dependencies = []
+keywords = ["robotics", "physical-ai", "evaluation", "verification", "lerobot"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+taskwitness = "taskwitness.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/TaskWitness/taskwitness"
+Issues = "https://github.com/TaskWitness/taskwitness/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
