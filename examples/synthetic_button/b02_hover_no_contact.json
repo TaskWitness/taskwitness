@@ -1,0 +1,1485 @@
+{
+ "schema": "taskwitness.episode/v0",
+ "episode_id": "b02_hover_no_contact",
+ "description": "Tool hovers over the button for 0.6 s but never pushes it down.",
+ "synthetic": true,
+ "task": {
+  "type": "button_press",
+  "button": {
+   "name": "start_button",
+   "expected_presses": 1,
+   "zone": {
+    "x_min": 0.5,
+    "x_max": 0.56,
+    "y_min": 0.1,
+    "y_max": 0.16
+   }
+  }
+ },
+ "claim": {
+  "source": "policy_self_report",
+  "success": true
+ },
+ "video": [
+  {
+   "t": 0.0,
+   "tool_xy": [
+    0.2,
+    0.4
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 0.1,
+   "tool_xy": [
+    0.2254,
+    0.3792
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 0.2,
+   "tool_xy": [
+    0.2508,
+    0.3585
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 0.3,
+   "tool_xy": [
+    0.2762,
+    0.3377
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 0.4,
+   "tool_xy": [
+    0.3015,
+    0.3169
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 0.5,
+   "tool_xy": [
+    0.3269,
+    0.2962
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 0.6,
+   "tool_xy": [
+    0.3523,
+    0.2754
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 0.7,
+   "tool_xy": [
+    0.3777,
+    0.2546
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 0.8,
+   "tool_xy": [
+    0.4031,
+    0.2338
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 0.9,
+   "tool_xy": [
+    0.4285,
+    0.2131
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 1.0,
+   "tool_xy": [
+    0.4538,
+    0.1923
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 1.1,
+   "tool_xy": [
+    0.4792,
+    0.1715
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 1.2,
+   "tool_xy": [
+    0.5046,
+    0.1508
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 1.3,
+   "tool_xy": [
+    0.53,
+    0.13
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 1.4,
+   "tool_xy": [
+    0.53,
+    0.13
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 1.5,
+   "tool_xy": [
+    0.53,
+    0.13
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 1.6,
+   "tool_xy": [
+    0.53,
+    0.13
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 1.7,
+   "tool_xy": [
+    0.53,
+    0.13
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 1.8,
+   "tool_xy": [
+    0.53,
+    0.13
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 1.9,
+   "tool_xy": [
+    0.53,
+    0.13
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 2.0,
+   "tool_xy": [
+    0.4829,
+    0.1686
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 2.1,
+   "tool_xy": [
+    0.4357,
+    0.2071
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 2.2,
+   "tool_xy": [
+    0.3886,
+    0.2457
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 2.3,
+   "tool_xy": [
+    0.3414,
+    0.2843
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 2.4,
+   "tool_xy": [
+    0.2943,
+    0.3229
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 2.5,
+   "tool_xy": [
+    0.2471,
+    0.3614
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 2.6,
+   "tool_xy": [
+    0.2,
+    0.4
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 2.7,
+   "tool_xy": [
+    0.2,
+    0.4
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 2.8,
+   "tool_xy": [
+    0.2,
+    0.4
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 2.9,
+   "tool_xy": [
+    0.2,
+    0.4
+   ],
+   "confidence": 0.9
+  },
+  {
+   "t": 3.0,
+   "tool_xy": [
+    0.2,
+    0.4
+   ],
+   "confidence": 0.9
+  }
+ ],
+ "sensors": {
+  "button": [
+   {
+    "t": 0.0,
+    "pressed": false
+   },
+   {
+    "t": 0.01,
+    "pressed": false
+   },
+   {
+    "t": 0.02,
+    "pressed": false
+   },
+   {
+    "t": 0.03,
+    "pressed": false
+   },
+   {
+    "t": 0.04,
+    "pressed": false
+   },
+   {
+    "t": 0.05,
+    "pressed": false
+   },
+   {
+    "t": 0.06,
+    "pressed": false
+   },
+   {
+    "t": 0.07,
+    "pressed": false
+   },
+   {
+    "t": 0.08,
+    "pressed": false
+   },
+   {
+    "t": 0.09,
+    "pressed": false
+   },
+   {
+    "t": 0.1,
+    "pressed": false
+   },
+   {
+    "t": 0.11,
+    "pressed": false
+   },
+   {
+    "t": 0.12,
+    "pressed": false
+   },
+   {
+    "t": 0.13,
+    "pressed": false
+   },
+   {
+    "t": 0.14,
+    "pressed": false
+   },
+   {
+    "t": 0.15,
+    "pressed": false
+   },
+   {
+    "t": 0.16,
+    "pressed": false
+   },
+   {
+    "t": 0.17,
+    "pressed": false
+   },
+   {
+    "t": 0.18,
+    "pressed": false
+   },
+   {
+    "t": 0.19,
+    "pressed": false
+   },
+   {
+    "t": 0.2,
+    "pressed": false
+   },
+   {
+    "t": 0.21,
+    "pressed": false
+   },
+   {
+    "t": 0.22,
+    "pressed": false
+   },
+   {
+    "t": 0.23,
+    "pressed": false
+   },
+   {
+    "t": 0.24,
+    "pressed": false
+   },
+   {
+    "t": 0.25,
+    "pressed": false
+   },
+   {
+    "t": 0.26,
+    "pressed": false
+   },
+   {
+    "t": 0.27,
+    "pressed": false
+   },
+   {
+    "t": 0.28,
+    "pressed": false
+   },
+   {
+    "t": 0.29,
+    "pressed": false
+   },
+   {
+    "t": 0.3,
+    "pressed": false
+   },
+   {
+    "t": 0.31,
+    "pressed": false
+   },
+   {
+    "t": 0.32,
+    "pressed": false
+   },
+   {
+    "t": 0.33,
+    "pressed": false
+   },
+   {
+    "t": 0.34,
+    "pressed": false
+   },
+   {
+    "t": 0.35,
+    "pressed": false
+   },
+   {
+    "t": 0.36,
+    "pressed": false
+   },
+   {
+    "t": 0.37,
+    "pressed": false
+   },
+   {
+    "t": 0.38,
+    "pressed": false
+   },
+   {
+    "t": 0.39,
+    "pressed": false
+   },
+   {
+    "t": 0.4,
+    "pressed": false
+   },
+   {
+    "t": 0.41,
+    "pressed": false
+   },
+   {
+    "t": 0.42,
+    "pressed": false
+   },
+   {
+    "t": 0.43,
+    "pressed": false
+   },
+   {
+    "t": 0.44,
+    "pressed": false
+   },
+   {
+    "t": 0.45,
+    "pressed": false
+   },
+   {
+    "t": 0.46,
+    "pressed": false
+   },
+   {
+    "t": 0.47,
+    "pressed": false
+   },
+   {
+    "t": 0.48,
+    "pressed": false
+   },
+   {
+    "t": 0.49,
+    "pressed": false
+   },
+   {
+    "t": 0.5,
+    "pressed": false
+   },
+   {
+    "t": 0.51,
+    "pressed": false
+   },
+   {
+    "t": 0.52,
+    "pressed": false
+   },
+   {
+    "t": 0.53,
+    "pressed": false
+   },
+   {
+    "t": 0.54,
+    "pressed": false
+   },
+   {
+    "t": 0.55,
+    "pressed": false
+   },
+   {
+    "t": 0.56,
+    "pressed": false
+   },
+   {
+    "t": 0.57,
+    "pressed": false
+   },
+   {
+    "t": 0.58,
+    "pressed": false
+   },
+   {
+    "t": 0.59,
+    "pressed": false
+   },
+   {
+    "t": 0.6,
+    "pressed": false
+   },
+   {
+    "t": 0.61,
+    "pressed": false
+   },
+   {
+    "t": 0.62,
+    "pressed": false
+   },
+   {
+    "t": 0.63,
+    "pressed": false
+   },
+   {
+    "t": 0.64,
+    "pressed": false
+   },
+   {
+    "t": 0.65,
+    "pressed": false
+   },
+   {
+    "t": 0.66,
+    "pressed": false
+   },
+   {
+    "t": 0.67,
+    "pressed": false
+   },
+   {
+    "t": 0.68,
+    "pressed": false
+   },
+   {
+    "t": 0.69,
+    "pressed": false
+   },
+   {
+    "t": 0.7,
+    "pressed": false
+   },
+   {
+    "t": 0.71,
+    "pressed": false
+   },
+   {
+    "t": 0.72,
+    "pressed": false
+   },
+   {
+    "t": 0.73,
+    "pressed": false
+   },
+   {
+    "t": 0.74,
+    "pressed": false
+   },
+   {
+    "t": 0.75,
+    "pressed": false
+   },
+   {
+    "t": 0.76,
+    "pressed": false
+   },
+   {
+    "t": 0.77,
+    "pressed": false
+   },
+   {
+    "t": 0.78,
+    "pressed": false
+   },
+   {
+    "t": 0.79,
+    "pressed": false
+   },
+   {
+    "t": 0.8,
+    "pressed": false
+   },
+   {
+    "t": 0.81,
+    "pressed": false
+   },
+   {
+    "t": 0.82,
+    "pressed": false
+   },
+   {
+    "t": 0.83,
+    "pressed": false
+   },
+   {
+    "t": 0.84,
+    "pressed": false
+   },
+   {
+    "t": 0.85,
+    "pressed": false
+   },
+   {
+    "t": 0.86,
+    "pressed": false
+   },
+   {
+    "t": 0.87,
+    "pressed": false
+   },
+   {
+    "t": 0.88,
+    "pressed": false
+   },
+   {
+    "t": 0.89,
+    "pressed": false
+   },
+   {
+    "t": 0.9,
+    "pressed": false
+   },
+   {
+    "t": 0.91,
+    "pressed": false
+   },
+   {
+    "t": 0.92,
+    "pressed": false
+   },
+   {
+    "t": 0.93,
+    "pressed": false
+   },
+   {
+    "t": 0.94,
+    "pressed": false
+   },
+   {
+    "t": 0.95,
+    "pressed": false
+   },
+   {
+    "t": 0.96,
+    "pressed": false
+   },
+   {
+    "t": 0.97,
+    "pressed": false
+   },
+   {
+    "t": 0.98,
+    "pressed": false
+   },
+   {
+    "t": 0.99,
+    "pressed": false
+   },
+   {
+    "t": 1.0,
+    "pressed": false
+   },
+   {
+    "t": 1.01,
+    "pressed": false
+   },
+   {
+    "t": 1.02,
+    "pressed": false
+   },
+   {
+    "t": 1.03,
+    "pressed": false
+   },
+   {
+    "t": 1.04,
+    "pressed": false
+   },
+   {
+    "t": 1.05,
+    "pressed": false
+   },
+   {
+    "t": 1.06,
+    "pressed": false
+   },
+   {
+    "t": 1.07,
+    "pressed": false
+   },
+   {
+    "t": 1.08,
+    "pressed": false
+   },
+   {
+    "t": 1.09,
+    "pressed": false
+   },
+   {
+    "t": 1.1,
+    "pressed": false
+   },
+   {
+    "t": 1.11,
+    "pressed": false
+   },
+   {
+    "t": 1.12,
+    "pressed": false
+   },
+   {
+    "t": 1.13,
+    "pressed": false
+   },
+   {
+    "t": 1.14,
+    "pressed": false
+   },
+   {
+    "t": 1.15,
+    "pressed": false
+   },
+   {
+    "t": 1.16,
+    "pressed": false
+   },
+   {
+    "t": 1.17,
+    "pressed": false
+   },
+   {
+    "t": 1.18,
+    "pressed": false
+   },
+   {
+    "t": 1.19,
+    "pressed": false
+   },
+   {
+    "t": 1.2,
+    "pressed": false
+   },
+   {
+    "t": 1.21,
+    "pressed": false
+   },
+   {
+    "t": 1.22,
+    "pressed": false
+   },
+   {
+    "t": 1.23,
+    "pressed": false
+   },
+   {
+    "t": 1.24,
+    "pressed": false
+   },
+   {
+    "t": 1.25,
+    "pressed": false
+   },
+   {
+    "t": 1.26,
+    "pressed": false
+   },
+   {
+    "t": 1.27,
+    "pressed": false
+   },
+   {
+    "t": 1.28,
+    "pressed": false
+   },
+   {
+    "t": 1.29,
+    "pressed": false
+   },
+   {
+    "t": 1.3,
+    "pressed": false
+   },
+   {
+    "t": 1.31,
+    "pressed": false
+   },
+   {
+    "t": 1.32,
+    "pressed": false
+   },
+   {
+    "t": 1.33,
+    "pressed": false
+   },
+   {
+    "t": 1.34,
+    "pressed": false
+   },
+   {
+    "t": 1.35,
+    "pressed": false
+   },
+   {
+    "t": 1.36,
+    "pressed": false
+   },
+   {
+    "t": 1.37,
+    "pressed": false
+   },
+   {
+    "t": 1.38,
+    "pressed": false
+   },
+   {
+    "t": 1.39,
+    "pressed": false
+   },
+   {
+    "t": 1.4,
+    "pressed": false
+   },
+   {
+    "t": 1.41,
+    "pressed": false
+   },
+   {
+    "t": 1.42,
+    "pressed": false
+   },
+   {
+    "t": 1.43,
+    "pressed": false
+   },
+   {
+    "t": 1.44,
+    "pressed": false
+   },
+   {
+    "t": 1.45,
+    "pressed": false
+   },
+   {
+    "t": 1.46,
+    "pressed": false
+   },
+   {
+    "t": 1.47,
+    "pressed": false
+   },
+   {
+    "t": 1.48,
+    "pressed": false
+   },
+   {
+    "t": 1.49,
+    "pressed": false
+   },
+   {
+    "t": 1.5,
+    "pressed": false
+   },
+   {
+    "t": 1.51,
+    "pressed": false
+   },
+   {
+    "t": 1.52,
+    "pressed": false
+   },
+   {
+    "t": 1.53,
+    "pressed": false
+   },
+   {
+    "t": 1.54,
+    "pressed": false
+   },
+   {
+    "t": 1.55,
+    "pressed": false
+   },
+   {
+    "t": 1.56,
+    "pressed": false
+   },
+   {
+    "t": 1.57,
+    "pressed": false
+   },
+   {
+    "t": 1.58,
+    "pressed": false
+   },
+   {
+    "t": 1.59,
+    "pressed": false
+   },
+   {
+    "t": 1.6,
+    "pressed": false
+   },
+   {
+    "t": 1.61,
+    "pressed": false
+   },
+   {
+    "t": 1.62,
+    "pressed": false
+   },
+   {
+    "t": 1.63,
+    "pressed": false
+   },
+   {
+    "t": 1.64,
+    "pressed": false
+   },
+   {
+    "t": 1.65,
+    "pressed": false
+   },
+   {
+    "t": 1.66,
+    "pressed": false
+   },
+   {
+    "t": 1.67,
+    "pressed": false
+   },
+   {
+    "t": 1.68,
+    "pressed": false
+   },
+   {
+    "t": 1.69,
+    "pressed": false
+   },
+   {
+    "t": 1.7,
+    "pressed": false
+   },
+   {
+    "t": 1.71,
+    "pressed": false
+   },
+   {
+    "t": 1.72,
+    "pressed": false
+   },
+   {
+    "t": 1.73,
+    "pressed": false
+   },
+   {
+    "t": 1.74,
+    "pressed": false
+   },
+   {
+    "t": 1.75,
+    "pressed": false
+   },
+   {
+    "t": 1.76,
+    "pressed": false
+   },
+   {
+    "t": 1.77,
+    "pressed": false
+   },
+   {
+    "t": 1.78,
+    "pressed": false
+   },
+   {
+    "t": 1.79,
+    "pressed": false
+   },
+   {
+    "t": 1.8,
+    "pressed": false
+   },
+   {
+    "t": 1.81,
+    "pressed": false
+   },
+   {
+    "t": 1.82,
+    "pressed": false
+   },
+   {
+    "t": 1.83,
+    "pressed": false
+   },
+   {
+    "t": 1.84,
+    "pressed": false
+   },
+   {
+    "t": 1.85,
+    "pressed": false
+   },
+   {
+    "t": 1.86,
+    "pressed": false
+   },
+   {
+    "t": 1.87,
+    "pressed": false
+   },
+   {
+    "t": 1.88,
+    "pressed": false
+   },
+   {
+    "t": 1.89,
+    "pressed": false
+   },
+   {
+    "t": 1.9,
+    "pressed": false
+   },
+   {
+    "t": 1.91,
+    "pressed": false
+   },
+   {
+    "t": 1.92,
+    "pressed": false
+   },
+   {
+    "t": 1.93,
+    "pressed": false
+   },
+   {
+    "t": 1.94,
+    "pressed": false
+   },
+   {
+    "t": 1.95,
+    "pressed": false
+   },
+   {
+    "t": 1.96,
+    "pressed": false
+   },
+   {
+    "t": 1.97,
+    "pressed": false
+   },
+   {
+    "t": 1.98,
+    "pressed": false
+   },
+   {
+    "t": 1.99,
+    "pressed": false
+   },
+   {
+    "t": 2.0,
+    "pressed": false
+   },
+   {
+    "t": 2.01,
+    "pressed": false
+   },
+   {
+    "t": 2.02,
+    "pressed": false
+   },
+   {
+    "t": 2.03,
+    "pressed": false
+   },
+   {
+    "t": 2.04,
+    "pressed": false
+   },
+   {
+    "t": 2.05,
+    "pressed": false
+   },
+   {
+    "t": 2.06,
+    "pressed": false
+   },
+   {
+    "t": 2.07,
+    "pressed": false
+   },
+   {
+    "t": 2.08,
+    "pressed": false
+   },
+   {
+    "t": 2.09,
+    "pressed": false
+   },
+   {
+    "t": 2.1,
+    "pressed": false
+   },
+   {
+    "t": 2.11,
+    "pressed": false
+   },
+   {
+    "t": 2.12,
+    "pressed": false
+   },
+   {
+    "t": 2.13,
+    "pressed": false
+   },
+   {
+    "t": 2.14,
+    "pressed": false
+   },
+   {
+    "t": 2.15,
+    "pressed": false
+   },
+   {
+    "t": 2.16,
+    "pressed": false
+   },
+   {
+    "t": 2.17,
+    "pressed": false
+   },
+   {
+    "t": 2.18,
+    "pressed": false
+   },
+   {
+    "t": 2.19,
+    "pressed": false
+   },
+   {
+    "t": 2.2,
+    "pressed": false
+   },
+   {
+    "t": 2.21,
+    "pressed": false
+   },
+   {
+    "t": 2.22,
+    "pressed": false
+   },
+   {
+    "t": 2.23,
+    "pressed": false
+   },
+   {
+    "t": 2.24,
+    "pressed": false
+   },
+   {
+    "t": 2.25,
+    "pressed": false
+   },
+   {
+    "t": 2.26,
+    "pressed": false
+   },
+   {
+    "t": 2.27,
+    "pressed": false
+   },
+   {
+    "t": 2.28,
+    "pressed": false
+   },
+   {
+    "t": 2.29,
+    "pressed": false
+   },
+   {
+    "t": 2.3,
+    "pressed": false
+   },
+   {
+    "t": 2.31,
+    "pressed": false
+   },
+   {
+    "t": 2.32,
+    "pressed": false
+   },
+   {
+    "t": 2.33,
+    "pressed": false
+   },
+   {
+    "t": 2.34,
+    "pressed": false
+   },
+   {
+    "t": 2.35,
+    "pressed": false
+   },
+   {
+    "t": 2.36,
+    "pressed": false
+   },
+   {
+    "t": 2.37,
+    "pressed": false
+   },
+   {
+    "t": 2.38,
+    "pressed": false
+   },
+   {
+    "t": 2.39,
+    "pressed": false
+   },
+   {
+    "t": 2.4,
+    "pressed": false
+   },
+   {
+    "t": 2.41,
+    "pressed": false
+   },
+   {
+    "t": 2.42,
+    "pressed": false
+   },
+   {
+    "t": 2.43,
+    "pressed": false
+   },
+   {
+    "t": 2.44,
+    "pressed": false
+   },
+   {
+    "t": 2.45,
+    "pressed": false
+   },
+   {
+    "t": 2.46,
+    "pressed": false
+   },
+   {
+    "t": 2.47,
+    "pressed": false
+   },
+   {
+    "t": 2.48,
+    "pressed": false
+   },
+   {
+    "t": 2.49,
+    "pressed": false
+   },
+   {
+    "t": 2.5,
+    "pressed": false
+   },
+   {
+    "t": 2.51,
+    "pressed": false
+   },
+   {
+    "t": 2.52,
+    "pressed": false
+   },
+   {
+    "t": 2.53,
+    "pressed": false
+   },
+   {
+    "t": 2.54,
+    "pressed": false
+   },
+   {
+    "t": 2.55,
+    "pressed": false
+   },
+   {
+    "t": 2.56,
+    "pressed": false
+   },
+   {
+    "t": 2.57,
+    "pressed": false
+   },
+   {
+    "t": 2.58,
+    "pressed": false
+   },
+   {
+    "t": 2.59,
+    "pressed": false
+   },
+   {
+    "t": 2.6,
+    "pressed": false
+   },
+   {
+    "t": 2.61,
+    "pressed": false
+   },
+   {
+    "t": 2.62,
+    "pressed": false
+   },
+   {
+    "t": 2.63,
+    "pressed": false
+   },
+   {
+    "t": 2.64,
+    "pressed": false
+   },
+   {
+    "t": 2.65,
+    "pressed": false
+   },
+   {
+    "t": 2.66,
+    "pressed": false
+   },
+   {
+    "t": 2.67,
+    "pressed": false
+   },
+   {
+    "t": 2.68,
+    "pressed": false
+   },
+   {
+    "t": 2.69,
+    "pressed": false
+   },
+   {
+    "t": 2.7,
+    "pressed": false
+   },
+   {
+    "t": 2.71,
+    "pressed": false
+   },
+   {
+    "t": 2.72,
+    "pressed": false
+   },
+   {
+    "t": 2.73,
+    "pressed": false
+   },
+   {
+    "t": 2.74,
+    "pressed": false
+   },
+   {
+    "t": 2.75,
+    "pressed": false
+   },
+   {
+    "t": 2.76,
+    "pressed": false
+   },
+   {
+    "t": 2.77,
+    "pressed": false
+   },
+   {
+    "t": 2.78,
+    "pressed": false
+   },
+   {
+    "t": 2.79,
+    "pressed": false
+   },
+   {
+    "t": 2.8,
+    "pressed": false
+   },
+   {
+    "t": 2.81,
+    "pressed": false
+   },
+   {
+    "t": 2.82,
+    "pressed": false
+   },
+   {
+    "t": 2.83,
+    "pressed": false
+   },
+   {
+    "t": 2.84,
+    "pressed": false
+   },
+   {
+    "t": 2.85,
+    "pressed": false
+   },
+   {
+    "t": 2.86,
+    "pressed": false
+   },
+   {
+    "t": 2.87,
+    "pressed": false
+   },
+   {
+    "t": 2.88,
+    "pressed": false
+   },
+   {
+    "t": 2.89,
+    "pressed": false
+   },
+   {
+    "t": 2.9,
+    "pressed": false
+   },
+   {
+    "t": 2.91,
+    "pressed": false
+   },
+   {
+    "t": 2.92,
+    "pressed": false
+   },
+   {
+    "t": 2.93,
+    "pressed": false
+   },
+   {
+    "t": 2.94,
+    "pressed": false
+   },
+   {
+    "t": 2.95,
+    "pressed": false
+   },
+   {
+    "t": 2.96,
+    "pressed": false
+   },
+   {
+    "t": 2.97,
+    "pressed": false
+   },
+   {
+    "t": 2.98,
+    "pressed": false
+   },
+   {
+    "t": 2.99,
+    "pressed": false
+   },
+   {
+    "t": 3.0,
+    "pressed": false
+   }
+  ]
+ },
+ "label": {
+  "verdict": "FAIL",
+  "note": "Synthetic ground truth: video shows the tool at the button, the switch never closed."
+ }
+}

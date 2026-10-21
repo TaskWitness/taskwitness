@@ -2,8 +2,8 @@
 
 # WitnessNode hardware notes (draft)
 
-Status: **design notes only.** No firmware, adapter or wiring has been built or
-tested yet. Part choices below are starting points for the Day 8-30 experiment,
+Status: **design notes only.** No firmware or wiring has been built or tested
+yet. The host-side software exists: `taskwitness calibrate` and `taskwitness ingest`. Part choices below are starting points for the Day 8-30 experiment,
 not a validated bill of materials.
 
 ## Goal
@@ -24,13 +24,21 @@ shared with the camera.
 
 ## Data contract
 
-The node should emit one line per sample, e.g. `t_ms,grams`, which a host-side
-adapter (not yet written) converts into `sensors.load_cell` entries of a
-`taskwitness.episode/v0` file. See [../docs/EVIDENCE_SPEC.en.md](../docs/EVIDENCE_SPEC.md).
+The node should emit one line per sample, e.g. `t_ms,raw` (raw ADC counts). Save it
+with any serial logger, then:
+
+```bash
+taskwitness calibrate load-cell --empty empty.csv --ref 100=ref100.csv --ref 500=ref500.csv --out loadcell.cal.json
+taskwitness ingest place --task task.json --id trial-001 --load-cell trial-001.csv --load-cell-cal loadcell.cal.json --out trial-001.json
+```
+
+Formats: [../docs/EVIDENCE_SPEC.en.md](../docs/EVIDENCE_SPEC.en.md); the full workflow:
+[../docs/EXPERIMENT_GUIDE.en.md](../docs/EXPERIMENT_GUIDE.en.md). Firmware and a live recorder are not written yet.
 
 ## Calibration checklist
 
-1. Tare with the empty plate, then scale with at least two reference masses.
+1. Tare with the empty plate, then scale with at least two reference masses
+   (`taskwitness calibrate load-cell` reports noise, residuals and suggested thresholds).
 2. Record the calibration masses and residual error with each experiment batch.
 3. Measure noise (std-dev) on an empty settled plate; `stability_std_g` must sit
    comfortably above it.
@@ -38,6 +46,9 @@ adapter (not yet written) converts into `sensors.load_cell` entries of a
    and the episode end time must allow for it.
 5. Synchronise clocks: start each episode with a tap on the plate visible to the
    camera, and align the load spike to the video frame.
+
+For button tasks, read the button's own contact (for example on a microcontroller
+digital input), log it as `t_ms,1|0`, and import it with `taskwitness ingest button_press`.
 
 ## Known limitations
 

@@ -7,7 +7,7 @@
 ```
 ┌──────────────────────────────────────────────┐
 │ Robot / VLA policy / agent                    │  controls the arm, records video,
-│ (LeRobot, ROS 2, vendor stacks)               │  may self-report success
+│ (LeRobot, ROS 2, Inspect Robots, vendor)      │  may self-report success
 └──────────────┬───────────────────────────────┘
                │ episode: task spec + sensor streams + video observations
 ┌──────────────▼───────────────────────────────┐
@@ -16,7 +16,7 @@
 └──────────────┬───────────────────────────────┘
                │ PASS / FAIL / UNKNOWN + evidence bundle
 ┌──────────────▼───────────────────────────────┐
-│ Evaluation harness, CI, dashboards, humans    │
+│ Evaluation harness, CI, statistics, humans    │
 └──────────────────────────────────────────────┘
 ```
 
@@ -24,38 +24,64 @@ TaskWitness is deliberately independent of the policy under test: it never
 receives policy internals, never sends commands, and ignores the policy's own
 success claim when deciding.
 
-## Components (v0.1)
+## Data flow (v0.2)
+
+```
+raw logs ──calibrate──► calibration files
+   │                         │
+   ├── video ──track──► taskwitness.video/v0 ─┐
+   │                                          ▼
+   └────────────────────ingest──────────► taskwitness.episode/v0
+                                              │
+                                verify / batch│(PlaceOracle, ButtonPressOracle)
+                                              ▼
+                                  taskwitness.evidence/v0 ──sign──► signature
+                                              │
+                         evaluate / audit / estimate ──► statistics reports
+```
+
+## Modules
 
 | Module | Responsibility |
 | --- | --- |
-| `oracle.validate_episode` | Reject malformed episodes before judging. |
-| `oracle.sensor_oracle` | Classify the final settle window of the load cell: `PLACED`, `ABSENT`, `PARTIAL_LOAD`, `OVERLOAD`, `UNSTABLE`, `NO_DATA`. |
-| `oracle.gripper_oracle` | Final gripper state: `OPEN`, `CLOSED`, `NO_DATA`. |
-| `oracle.video_oracle` | Classify confident end-of-episode object positions: `IN_ZONE`, `OUT_OF_ZONE`, `LOW_CONFIDENCE`, `NO_DATA`. |
-| `oracle.fuse` | Rule table that turns oracle states into a verdict with human-readable reasons. |
-| `oracle.verify_place` | Run everything and assemble the evidence bundle. |
-| `oracle.verify_bundle_integrity` | Recompute digests to detect edited bundles or mismatched inputs. |
-| `cli` | `verify`, `batch`, `check`. |
+| `core` | Verdicts, errors, strict episode validation (finite numbers, stream shapes), evidence-bundle assembly and integrity digests. |
+| `oracle` | `PlaceOracle`: load-cell final state (`PLACED`, `ABSENT`, `PARTIAL_LOAD`, `OVERLOAD`, `UNSTABLE`, `NO_DATA`, `UNRESOLVABLE`), gripper state, video position; fusion rules. |
+| `button` | `ButtonPressOracle`: contact runs with bounce merging and minimum hold, observation gaps, still-pressed and count limits; video can only veto. |
+| `api` | `verify_episode` dispatches on `task.type`; `judge` returns a `Verdict`. |
+| `config` | Oracle config files, validated strictly; their digest goes into reports. |
+| `calibration` | Load-cell tare/scale fit with noise and residuals; camera homography (normalized DLT) with reprojection error. Pure Python. |
+| `adapters` | `t_ms,value` logs and tracker output into episodes; strict parsing, clock alignment, provenance digests. |
+| `vision` | Optional (`[vision]`): colour-blob tracker with region of interest; video reader assuming constant frame rate. |
+| `evaluate` | Wilson intervals, exact McNemar, absolute/conditional misses and audit coverage per stratum, external-judge audit (AUC, ECE, success bias), prediction-powered success-rate estimate. |
+| `signing` | Optional (`[sign]`): Ed25519 signatures over bundles, with explicit key pinning. |
+| `integrations.inspect_robots` | `taskwitness` and `taskwitness_unknown` scorers for Inspect Robots, registered through entry points. |
+| `cli` | All commands. |
+
+The core (`core`, oracles, `api`, `config`, `calibration`, `adapters`,
+`evaluate`) has no third-party dependencies.
 
 ## Design rules
 
 1. **Physical evidence is authoritative.** Video may veto a PASS, never create one.
-2. **UNKNOWN is a feature.** Missing, unsettled or contradictory evidence yields
-   UNKNOWN. The UNKNOWN rate is a metric to report alongside accuracy, not to hide.
+2. **UNKNOWN is a feature.** Missing, unsettled, unobserved or contradictory
+   evidence yields UNKNOWN. The UNKNOWN rate is reported next to every accuracy number.
 3. **Separation of evidence and labels.** Labels and robot claims are stripped
    before any oracle runs.
 4. **Determinism.** Same input + same config + same version gives byte-identical
    bundles, so bundles can be diffed, cached and re-verified by third parties.
-5. **No hidden thresholds.** The full config is embedded in every bundle.
+5. **No hidden thresholds.** The full config is embedded in every bundle; config
+   files are digested into every report.
+6. **Statistics before claims.** Rates come with intervals; comparisons between
+   judges are paired tests on the same episodes.
 
-## Planned extension points (not implemented)
+## Not implemented yet
 
-These are directions, not features. Do not document them as available until they ship.
+These are directions, not features.
 
-- **Sensor adapters**: read HX711 load-cell streams, gripper telemetry, timestamps.
-- **Video inference**: produce `object_xy` + confidence from raw frames instead of
-  requiring pre-computed positions.
-- **Calibration**: map camera coordinates to the plate frame; tare and scale the load cell.
-- **More oracles**: `ButtonPressOracle` (v0.2), then others driven by real demand.
-- **Framework plugins**: expose TaskWitness as a success detector / evaluator inside
-  existing robot-learning evaluation loops.
+- WitnessNode firmware and a live serial recorder (today: any logger that writes `t_ms,value`).
+- A LeRobot dataset adapter (today: export per-episode scores and use `audit`).
+- Learned or VLM-based video detectors (today: a colour-blob baseline).
+- Anytime-valid sequential tests (STEP / N-SCORE) and finite-sample PPI bounds.
+- Conformal calibration of oracle thresholds from known-good recordings.
+
+See [RESEARCH.en.md](RESEARCH.en.md) for the reasoning behind these choices.

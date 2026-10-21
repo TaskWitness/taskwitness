@@ -1,0 +1,143 @@
+[简体中文](EXPERIMENT_GUIDE.md) · **English**
+
+# Experiment guide: from a real rig to an honest result
+
+This is the protocol for the Day 8-30 experiment (phone camera + load cell, at
+least 200 independently labeled place attempts). Every step uses a command that
+exists today. The hardware itself is described in [hardware/README.en.md](../hardware/README.en.md).
+
+```
+record logs ─► calibrate ─► track video ─► ingest ─► label ─► verify / evaluate / estimate
+```
+
+## 0. Freeze the plan before collecting data
+
+Write down, and commit to git *before* the first trial:
+
+- the task (object, mass, target zone) as `task.json`;
+- the oracle thresholds as `config.json`. Its SHA-256 appears in every report
+  as `config_sha256`, so readers can check you did not tune thresholds on the results;
+- the failure modes you will stage (for example `none`, `not_released`, `bounce`,
+  `edge`, `occluded`) and how many trials of each;
+- the primary metric: conditional miss rate (false passes among real failures)
+  of TaskWitness versus vision only, tested with the exact McNemar test.
+
+```json
+{"place": {"settle_window_s": 1.0, "min_settle_samples": 5, "stability_std_g": 2.0}}
+```
+
+## 1. Calibrate the load cell
+
+Record 10-20 s of raw readings with the plate empty, then with at least two
+reference masses. Logs are `t_ms,raw` lines, as any serial logger writes them.
+
+```bash
+taskwitness calibrate load-cell --empty empty.csv \
+    --ref 100=ref100.csv --ref 500=ref500.csv --out loadcell.cal.json
+```
+
+The output reports noise, residuals and `suggested_place_config`. If the max
+error is more than a few grams, fix the mechanics (rigid plate, no cable
+strain) before going on. Copy the thresholds you choose into `config.json` now,
+not after seeing results.
+
+## 2. Calibrate the camera
+
+Mark at least four points on the plate (corners work), read their pixel
+positions in one frame and measure them in the plate frame, in the same units
+as `target_zone`:
+
+```json
+[{"pixel": [102, 88], "plate": [0.0, 0.0]}, {"pixel": [538, 95], "plate": [0.3, 0.0]},
+ {"pixel": [551, 410], "plate": [0.3, 0.2]}, {"pixel": [95, 402], "plate": [0.0, 0.2]}]
+```
+
+```bash
+taskwitness calibrate camera --points points.json --out camera.cal.json
+```
+
+The reprojection error is in plate units; it should be well below the zone size.
+
+## 3. Record each trial
+
+- Start every trial with a **sync tap**: tap the plate once where the camera can
+  see it. The load spike and the video frame of the tap give the clock offset
+  between video and sensors (`--video-offset-s`).
+- Log the load cell (`t_ms,raw`) and, if available, the gripper (`t_ms,open|closed`)
+  on the same clock.
+- Record video at a constant frame rate (re-encode phone video if needed).
+- Do not look at TaskWitness output while collecting.
+
+## 4. Track the object in the video
+
+```bash
+taskwitness track trial-001.mp4 --color 200,40,40 --tolerance 60 \
+    --roi 80,60,560,420 --camera-cal camera.cal.json --out trial-001.video.json
+```
+
+Check a few frames by eye. A region of interest around the plate removes most
+false detections.
+
+## 5. Build the episode
+
+```bash
+taskwitness ingest place --task task.json --id trial-001 \
+    --load-cell trial-001.load.csv --load-cell-cal loadcell.cal.json \
+    --gripper trial-001.gripper.csv \
+    --video trial-001.video.json --video-offset-s 0.42 \
+    --claim true --tag failure_mode=bounce --out episodes/trial-001.json
+```
+
+The episode records the SHA-256 of every source file under `provenance`, so the
+bundle's evidence digest covers the raw data. Strict parsing is the default; use
+`--lenient` only if you also report how many lines were skipped.
+
+## 6. Label independently
+
+A person who did not run the trial and does not see TaskWitness output labels
+each trial PASS or FAIL from direct inspection, and the label is added with
+`--label`. For `estimate`, label a **uniformly random subset** chosen before
+labeling starts; do not pick "interesting" trials.
+
+## 7. Verify, evaluate, estimate
+
+```bash
+taskwitness batch episodes --config config.json --out batch.json
+taskwitness evaluate episodes --config config.json --by failure_mode --out eval.json
+taskwitness estimate episodes --config config.json --out estimate.json
+```
+
+Report, together:
+
+- conditional miss (false passes among real failures) and false fail, with
+  95% intervals, for TaskWitness and for vision only;
+- the UNKNOWN rate: a low miss rate bought with a high UNKNOWN rate is not a win;
+- absolute misses and audit coverage, and the per-failure-mode breakdown;
+- the McNemar p-value for paired false passes;
+- `config_sha256` and the list of evidence digests.
+
+Publish results whether they favor TaskWitness or not.
+
+## 8. Audit another judge on the same episodes
+
+Export any judge's per-episode score (Robometer success probability, TOPReward,
+a VLM's verdict) as `episode_id,score` and run:
+
+```bash
+taskwitness audit --judge robometer.csv --episodes episodes --by failure_mode --out audit.json
+```
+
+You get its false passes, balanced accuracy, ROC-AUC, calibration error and
+success bias against your labels, plus a paired comparison with TaskWitness.
+
+## 9. Optional: sign the bundles
+
+```bash
+taskwitness keygen --dir keys
+taskwitness verify episodes/trial-001.json --out bundles/trial-001.json
+taskwitness sign bundles/trial-001.json --key keys/taskwitness.key --out bundles/trial-001.sig.json
+taskwitness verify-signature bundles/trial-001.json bundles/trial-001.sig.json --public-key keys/taskwitness.pub
+```
+
+A signature shows the bundle came from your key unchanged. It does not show the
+verdict is right.

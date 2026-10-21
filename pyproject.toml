@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "taskwitness"
-version = "0.1.0"
+version = "0.2.0"
 description = "An independent, sensor-grounded verification layer for Physical AI."
 readme = "README.en.md"
 license = "Apache-2.0"
@@ -20,9 +20,17 @@ classifiers = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]
+vision = ["numpy>=1.24", "opencv-python-headless>=4.8"]
+sign = ["cryptography>=42"]
+inspect = ["inspect-robots>=0.60"]
+all = ["taskwitness[vision,sign,inspect]"]
 
 [project.scripts]
 taskwitness = "taskwitness.cli:main"
+
+[project.entry-points."inspect_robots.scorers"]
+taskwitness = "taskwitness.integrations.inspect_robots:taskwitness_scorer"
+taskwitness_unknown = "taskwitness.integrations.inspect_robots:taskwitness_unknown_scorer"
 
 [project.urls]
 Homepage = "https://github.com/TaskWitness/taskwitness"

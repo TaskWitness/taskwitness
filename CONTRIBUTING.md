@@ -6,7 +6,7 @@
 
 ## 最需要的贡献
 
-1. **真实实验。** 按[证据规范](docs/EVIDENCE_SPEC.md)整理的、带称重数据和人工标签的放置任务记录。TaskWitness 判错的案例与判对的案例同样有价值，请务必包含。
+1. **真实实验。** 带称重数据和人工标签的放置任务记录，建议按[实验指南](docs/EXPERIMENT_GUIDE.md)采集，并按[证据规范](docs/EVIDENCE_SPEC.md)整理。TaskWitness 判错的案例与判对的案例同样有价值，请务必包含。
 2. **在你自己的设备上复现**，并附上所用配置。
 3. **Bug 报告**，请附上能触发问题的 episode 文件。
 
@@ -14,11 +14,14 @@
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
-pip install -e '.[dev]'
+pip install -e '.[dev]'          # 仅核心，可选功能的测试会自动跳过
+pip install -e '.[dev,all]'      # 包含视频、签名与 Inspect Robots
 pytest -q
 ```
 
-如果你修改了 `examples/synthetic/generate.py`，请运行 `python examples/synthetic/generate.py` 重新生成 episode 并提交 JSON 文件；CI 会检查两者是否同步。
+如果你修改了 `examples/synthetic/generate.py` 或 `examples/synthetic_button/generate.py`，请运行对应脚本重新生成 episode 并提交 JSON 文件；CI 会检查两者是否同步。
+
+核心模块（不含 `vision`、`signing`、`integrations`）必须保持零第三方依赖。
 
 ## 基本规则
 
