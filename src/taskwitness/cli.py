@@ -490,8 +490,8 @@ def cmd_track(args: argparse.Namespace) -> int:
         roi=ints(args.roi, 4, "--roi") if args.roi else None,
     )
     camera = CameraCalibration.from_dict(read_json(args.camera_cal)) if args.camera_cal else None
-    doc = track_frames(read_video(args.video, stride=args.stride), tracker, camera)
-    doc["source"] = {"file": Path(args.video).name, "sha256": file_sha256(args.video)}
+    doc = track_frames(read_video(args.video, stride=args.stride, start_s=args.start_s, end_s=args.end_s), tracker, camera)
+    doc["source"] = {"file": Path(args.video).name, "sha256": file_sha256(args.video), "start_s": args.start_s, "end_s": args.end_s}
     _write(doc, args.out)
     seen = sum(f["xy"] is not None for f in doc["frames"])
     _say(f"{len(doc['frames'])} frames, target detected in {seen}")
@@ -499,6 +499,39 @@ def cmd_track(args: argparse.Namespace) -> int:
 
 
 # ----------------------------------------------------------------------------- signing
+
+
+def _episode_set(spec: str | None) -> set[int] | None:
+    if not spec:
+        return None
+    out: set[int] = set()
+    for part in spec.split(","):
+        lo, sep, hi = part.partition("-")
+        try:
+            out.update(range(int(lo), int(hi) + 1) if sep else [int(lo)])
+        except ValueError:
+            raise AdapterError(f"--episodes must look like 0-9,14, got {spec!r}") from None
+    return out
+
+
+def cmd_lerobot(args: argparse.Namespace) -> int:
+    from taskwitness.integrations.lerobot import LeRobotDataset, episodes_from_lerobot
+
+    dataset = LeRobotDataset(args.root)
+    mapping = read_json(args.mapping)
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    written, counts = 0, {}
+    for episode in episodes_from_lerobot(dataset, mapping, _episode_set(args.episodes), args.limit):
+        (out / f"{episode['episode_id']}.json").write_text(json.dumps(episode, indent=1) + "\n", encoding="utf-8")
+        written += 1
+        label = episode.get("label", {}).get("verdict", "unlabeled")
+        counts[label] = counts.get(label, 0) + 1
+    if not written:
+        raise AdapterError("no episodes matched; check --episodes, mapping.segments and mapping.task_prefix")
+    _say(f"wrote {written} episodes to {out} ({', '.join(f'{k} {v}' for k, v in sorted(counts.items()))}); frames read from {len(dataset.episodes)} LeRobot episodes")
+    _say("next: taskwitness evaluate " + str(out))
+    return 0
 
 
 def cmd_keygen(args: argparse.Namespace) -> int:
@@ -642,9 +675,19 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--full-area", type=int, default=200, help="pixels for full size confidence")
     p.add_argument("--roi", help="x0,y0,x1,y1: only look inside this pixel rectangle")
     p.add_argument("--stride", type=int, default=1, help="process every Nth frame")
+    p.add_argument("--start-s", type=float, default=0.0, help="start of the slice to track, in seconds (a LeRobot MP4 holds several episodes)")
+    p.add_argument("--end-s", type=float, help="end of the slice, in seconds")
     p.add_argument("--camera-cal", help="map detections to plate coordinates")
     p.add_argument("--out")
     p.set_defaults(func=cmd_track)
+
+    p = sub.add_parser("lerobot", help="turn a local LeRobot v3 dataset into TaskWitness episodes (needs [lerobot] extra)")
+    p.add_argument("root", help="dataset directory (for example downloaded from the Hugging Face Hub)")
+    p.add_argument("--mapping", required=True, help="JSON mapping dataset columns to sensor streams; see taskwitness.integrations.lerobot")
+    p.add_argument("--episodes", help="LeRobot episode indices to read, for example 0-9,14 (default: all)")
+    p.add_argument("--limit", type=int, help="stop after this many TaskWitness episodes")
+    p.add_argument("--out", required=True, help="directory for the episode files")
+    p.set_defaults(func=cmd_lerobot)
 
     p = sub.add_parser("keygen", help="create an Ed25519 key pair for signing bundles (needs [sign] extra)")
     p.add_argument("--dir", default=".")

@@ -137,6 +137,10 @@ def test_track_cli(tmp_path):
     doc = read(out)
     assert doc["coords"] == "pixel" and len(doc["frames"]) == 5
     assert all(f["xy"] is not None for f in doc["frames"])
+    assert main(["track", str(path), "--color", "220,30,30", "--tolerance", "70", "--start-s", "0.4", "--end-s", "1.0", "--out", str(out)]) == 0
+    sliced = read(out)
+    assert len(sliced["frames"]) == 3 and sliced["frames"][0]["t"] == 0.0  # frames 2-4 of 5 fps, timed from the slice start
+    assert sliced["source"]["start_s"] == 0.4 and sliced["source"]["end_s"] == 1.0
     assert main(["track", str(path), "--color", "1,2", "--out", str(out)]) == 3
 
 

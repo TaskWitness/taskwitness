@@ -19,7 +19,7 @@ external sensor; labels come from the dataset's annotators; this is one dataset,
 one robot, one task family.
 
 Setup (about 450 MB, no videos needed):
-    pip install pyarrow numpy
+    pip install "taskwitness[lerobot]"
     python examples/real_data/reassemble_grasp.py --download data/reassemble
     python examples/real_data/reassemble_grasp.py --root data/reassemble --out reassemble_grasp.json
 """
@@ -38,7 +38,7 @@ from taskwitness.evaluate import Row, judge_metrics, paired_false_pass, wilson
 from taskwitness.grasp import GraspConfig
 
 REPO = "https://huggingface.co/datasets/robot-lev/reassemble/resolve/main"
-FILES = ["meta/tasks.parquet", "meta/splits.json"] + [f"data/chunk-000/file-{i:03d}.parquet" for i in range(10)]
+FILES = ["meta/info.json", "meta/tasks.parquet", "meta/splits.json", "meta/episodes/chunk-000/file-000.parquet"] + [f"data/chunk-000/file-{i:03d}.parquet" for i in range(10)]
 FULLY_OPEN_M = 0.039  # the Franka gripper opens to 0.040 m per finger
 
 
@@ -52,33 +52,30 @@ def download(root: Path) -> None:
         urllib.request.urlretrieve(f"{REPO}/{rel}", target)
 
 
-def load_pick_segments(root: Path):
-    import numpy as np
-    import pyarrow.parquet as pq
+PICK_MAPPING = {
+    # The band is a placeholder; main() sets each object's band from the training split.
+    "task": {"type": "grasp", "object": {"name": "pick", "width_m_min": 0.0, "width_m_max": 0.05}},
+    "sensors": {"gripper_width": {"column": "observation.state.gripper_position", "index": 0, "field": "width_m"}},
+    "segments": {"column": "segment.index"},
+    "label": {"column": "segment.success", "reduce": "last"},
+    "task_prefix": "Pick ",
+}
 
-    tasks = {r["task_index"]: r["task"] for r in pq.read_table(root / "meta/tasks.parquet").to_pylist()}
+
+def load_pick_segments(root: Path):
+    """Pick segments through TaskWitness's LeRobot adapter: one per annotated action, with its human label."""
+    from taskwitness.integrations.lerobot import LeRobotDataset, episodes_from_lerobot
+
     splits = {int(k): v["split"] for k, v in json.loads((root / "meta/splits.json").read_text()).items()}
-    cols = ["episode_index", "timestamp", "task_index", "segment.index", "segment.success", "observation.state.gripper_position"]
     segments = []
-    for path in sorted((root / "data/chunk-000").glob("*.parquet")):
-        t = pq.read_table(path, columns=cols)
-        ep = np.asarray(t["episode_index"]).astype(int)
-        seg = np.asarray(t["segment.index"].to_pylist()).reshape(-1).astype(int)
-        ts = np.asarray(t["timestamp"]).astype(float)
-        ok = np.asarray(t["segment.success"].to_pylist()).reshape(-1).astype(bool)
-        ti = np.asarray(t["task_index"].to_pylist()).reshape(-1).astype(int)
-        width = np.asarray(t["observation.state.gripper_position"].to_pylist(), dtype=float)[:, 0]
-        key = ep * 100000 + seg
-        change = np.flatnonzero(np.diff(key)) + 1
-        for lo, hi in zip(np.r_[0, change], np.r_[change, len(key)]):
-            name = tasks[int(ti[lo])]
-            if not name.startswith("Pick "):
-                continue
-            segments.append({
-                "episode": int(ep[lo]), "segment": int(seg[lo]), "object": name[5:].rstrip("."),
-                "success": bool(ok[lo]), "split": splits.get(int(ep[lo]), "unassigned"),
-                "t": (ts[lo:hi] - ts[lo]).tolist(), "width": width[lo:hi].tolist(),
-            })
+    for ep in episodes_from_lerobot(LeRobotDataset(root), PICK_MAPPING):
+        samples = ep["sensors"]["gripper_width"]
+        segments.append({
+            "episode": ep["tags"]["lerobot_episode"], "segment": ep["tags"]["segment"],
+            "object": ep["tags"]["task_text"][len("Pick "):].rstrip("."),
+            "success": ep["label"]["verdict"] == "PASS", "split": splits.get(ep["tags"]["lerobot_episode"], "unassigned"),
+            "t": [x["t"] for x in samples], "width": [x["width_m"] for x in samples],
+        })
     return segments
 
 
@@ -129,7 +126,7 @@ def main() -> None:
     try:
         segments = load_pick_segments(Path(args.root))
     except ImportError:
-        sys.exit("this script needs pyarrow and numpy: pip install pyarrow numpy")
+        sys.exit("this script needs pyarrow: pip install 'taskwitness[lerobot]'")
 
     cfg = GraspConfig(margin_m=args.margin_mm / 1000)
     train = [s for s in segments if s["split"] == "train"]

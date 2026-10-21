@@ -117,8 +117,14 @@ def track_frames(
     }
 
 
-def read_video(path: str, stride: int = 1, max_frames: int | None = None) -> Iterator[tuple[float, Any]]:
-    """Yield (t_s, rgb_frame) from a video file, assuming constant frame rate."""
+def read_video(
+    path: str, stride: int = 1, max_frames: int | None = None, start_s: float = 0.0, end_s: float | None = None
+) -> Iterator[tuple[float, Any]]:
+    """Yield (t_s, rgb_frame) from a video file, assuming constant frame rate.
+
+    `start_s` / `end_s` select a slice of the file (a LeRobot v3 MP4 concatenates several
+    episodes); yielded times are relative to `start_s`.
+    """
     try:
         import cv2
     except ImportError:  # pragma: no cover - exercised only without the extra
@@ -132,14 +138,22 @@ def read_video(path: str, stride: int = 1, max_frames: int | None = None) -> Ite
     if not fps or not math.isfinite(fps) or fps <= 0:
         cap.release()
         raise VisionError(f"video {path} reports no frame rate")
-    index = emitted = 0
+    if start_s < 0 or (end_s is not None and end_s <= start_s):
+        cap.release()
+        raise VisionError("need 0 <= start_s < end_s")
+    first = int(round(start_s * fps))
+    last = None if end_s is None else int(round(end_s * fps))
+    if first:
+        cap.set(cv2.CAP_PROP_POS_FRAMES, first)
+    index = first
+    emitted = 0
     try:
-        while True:
+        while last is None or index < last:
             ok, frame = cap.read()
             if not ok:
                 break
-            if index % stride == 0:
-                yield index / fps, frame[:, :, ::-1]
+            if (index - first) % stride == 0:
+                yield (index - first) / fps, frame[:, :, ::-1]
                 emitted += 1
                 if max_frames is not None and emitted >= max_frames:
                     break

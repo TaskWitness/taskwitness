@@ -1,0 +1,25 @@
+{
+  "task": {
+    "type": "grasp",
+    "object": {
+      "name": "pick",
+      "width_m_min": 0.0,
+      "width_m_max": 0.05
+    }
+  },
+  "sensors": {
+    "gripper_width": {
+      "column": "observation.state.gripper_position",
+      "index": 0,
+      "field": "width_m"
+    }
+  },
+  "segments": {
+    "column": "segment.index"
+  },
+  "label": {
+    "column": "segment.success",
+    "reduce": "last"
+  },
+  "task_prefix": "Pick "
+}
