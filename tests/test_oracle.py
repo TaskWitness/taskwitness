@@ -133,3 +133,26 @@ def test_cli_reports_bad_input(tmp_path):
     bad = tmp_path / "bad.json"
     bad.write_text('{"schema": "nope"}', encoding="utf-8")
     assert main(["verify", str(bad)]) == 3
+
+
+def test_leftover_object_on_the_plate_is_unknown_not_pass():
+    episode = load("01_clean_success.json")
+    for sample in episode["sensors"]["load_cell"]:
+        sample["grams"] += 52.0  # the previous trial's block was never removed
+    bundle = verify_place(episode)
+    assert bundle["verdict"] == "UNKNOWN"
+    assert bundle["oracles"][0]["state"] == "NOT_EMPTY_AT_START"
+    assert "not empty at the start" in bundle["reasons"][0]
+
+
+def test_baseline_check_can_be_disabled_and_ignores_a_single_spike():
+    from taskwitness.oracle import PlaceOracleConfig
+
+    leftover = load("01_clean_success.json")
+    for sample in leftover["sensors"]["load_cell"]:
+        sample["grams"] += 52.0
+    assert verify_place(leftover, PlaceOracleConfig(baseline_window_s=0.0))["oracles"][0]["state"] == "OVERLOAD"
+
+    spiky = load("01_clean_success.json")
+    spiky["sensors"]["load_cell"][1]["grams"] = 400.0  # one electrical spike in the baseline window
+    assert verify_place(spiky)["verdict"] == "PASS"  # the median ignores it

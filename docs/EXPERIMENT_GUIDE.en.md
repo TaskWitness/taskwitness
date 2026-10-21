@@ -10,6 +10,19 @@ exists today. The hardware itself is described in [hardware/README.en.md](../har
 record logs ─► calibrate ─► track video ─► ingest ─► label ─► verify / evaluate / estimate
 ```
 
+## Before you build anything: rehearse with the simulator
+
+```bash
+taskwitness simulate place --n 500 --preset lab --set load_noise_g=1.0 --out sim
+taskwitness evaluate sim --by failure_mode --order-by trial
+```
+
+It generates episodes with known ground truth at the noise level you expect, so you
+can see how many trials a decision needs, which failure modes land in UNKNOWN, and
+whether your sample rate and thresholds are adequate, before collecting real data.
+Its failure modes and noise levels are assumptions: see [SIMULATION.en.md](SIMULATION.en.md).
+Do not use the simulator's numbers as results.
+
 ## 0. Freeze the plan before collecting data
 
 Write down, and commit to git *before* the first trial:
@@ -38,8 +51,21 @@ taskwitness calibrate load-cell --empty empty.csv \
 
 The output reports noise, residuals and `suggested_place_config`. If the max
 error is more than a few grams, fix the mechanics (rigid plate, no cable
-strain) before going on. Copy the thresholds you choose into `config.json` now,
-not after seeing results.
+strain) before going on.
+
+Then set the oracle thresholds from known-good recordings instead of guessing.
+Record the empty plate and the object resting on it, ideally in several
+sessions (at least 19 one-second windows per kind at the default alpha = 0.05;
+a minute of logging gives ~59):
+
+```bash
+taskwitness calibrate thresholds --empty empty.csv --object 52=block.csv \
+    --load-cell-cal loadcell.cal.json --alpha 0.05 --out thresholds.json
+```
+
+A new known-good window exceeds each threshold with probability at most alpha,
+if the rig does not drift between calibration and the experiment. Copy the
+`config` block into `config.json` now, not after seeing results.
 
 ## 2. Calibrate the camera
 
@@ -113,8 +139,19 @@ Report, together:
   95% intervals, for TaskWitness and for vision only;
 - the UNKNOWN rate: a low miss rate bought with a high UNKNOWN rate is not a win;
 - absolute misses and audit coverage, and the per-failure-mode breakdown;
-- the McNemar p-value for paired false passes;
+- the McNemar p-value for paired false passes and, if you want to stop early,
+  the sequential test: `taskwitness evaluate ... --order-by trial` reads the
+  episodes in trial order (a numeric `--tag trial=N` set at ingest) and reports
+  whether, and at which discordant pair, it rejects "no difference" with the
+  type-I error held at alpha however often you looked. Fix the order and alpha
+  in step 0, not after;
 - `config_sha256` and the list of evidence digests.
+
+`estimate` prints several valid intervals (labels only, prediction-powered,
+asymptotic and finite-sample). Decide which one you will report in step 0:
+choosing the narrowest after seeing them voids its coverage. Prediction-powered
+intervals only help with an accurate judge and thousands of episodes; at the
+size of a small experiment, labels alone are usually narrower.
 
 Publish results whether they favor TaskWitness or not.
 

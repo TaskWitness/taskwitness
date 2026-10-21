@@ -17,9 +17,10 @@ from typing import Any
 
 from taskwitness.button import ButtonPressConfig
 from taskwitness.core import TaskWitnessError, sha256_of
+from taskwitness.grasp import GraspConfig
 from taskwitness.oracle import PlaceOracleConfig
 
-CONFIG_TYPES: dict[str, type] = {"place": PlaceOracleConfig, "button_press": ButtonPressConfig}
+CONFIG_TYPES: dict[str, type] = {"place": PlaceOracleConfig, "button_press": ButtonPressConfig, "grasp": GraspConfig}
 
 
 class ConfigError(TaskWitnessError):

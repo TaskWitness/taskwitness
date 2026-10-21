@@ -16,6 +16,7 @@
 
 ## D8–30：真实实验（手机 + 称重传感器）
 
+- [x] 物理仿真研究与公开数据集检验（v0.4，见 [仿真](SIMULATION.md) 与 [真实数据](REAL_DATA.md)）：定位并修正了 Oracle 的若干问题
 - [ ] 搭建 WitnessNode 原型（见 `hardware/README.md`）：称重模块 + 微控制器 + USB 串口
 - [x] 传感器适配器：把串口读数写成 `taskwitness.episode/v0`（`taskwitness ingest`，v0.2）
 - [x] 称重与相机校准（`taskwitness calibrate`，v0.2）
@@ -44,7 +45,7 @@
 - [ ] 汇总外部机器人环境的复现结果
 - [ ] 取得可复现的真实结果后，再发布 Show HN、相关 Reddit 社区与 Hugging Face Space
 - [x] 证据包签名（Ed25519，`taskwitness sign`，v0.2；签名只能证明来源，不能证明判定正确）
-- [ ] 任意时刻有效的序贯检验与有限样本 PPI 界（见 [研究笔记](RESEARCH.md)）
+- [x] 任意时刻有效的序贯检验、有限样本区间与保形阈值校准（v0.3，见 [研究笔记](RESEARCH.md)；STEP / N-SCORE 的完整方法尚未实现）
 
 **验收**：至少 1 份由外部贡献者独立复现并公开的真实实验结果。
 

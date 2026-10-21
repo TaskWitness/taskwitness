@@ -58,6 +58,10 @@ class PlaceOracleConfig:
     # Video frames below this confidence are ignored.
     video_min_confidence: float = 0.6
     video_final_window_s: float = 0.5
+    # The plate must read empty at the start (median of the first `baseline_window_s`), otherwise a
+    # leftover object or a bad tare would be mistaken for this trial's result. 0 disables the check.
+    baseline_window_s: float = 0.5
+    baseline_min_samples: int = 3
 
 
 def validate_episode(episode: dict[str, Any]) -> None:
@@ -97,6 +101,17 @@ def sensor_oracle(episode: dict[str, Any], cfg: PlaceOracleConfig, t_end: float 
             f"(need {cfg.min_settle_samples}); last sample at t={samples[-1]['t']}s",
             m,
         )
+
+    if cfg.baseline_window_s > 0:
+        start = samples[0]["t"]
+        baseline = [s["grams"] for s in samples if s["t"] < start + cfg.baseline_window_s]
+        if len(baseline) >= cfg.baseline_min_samples:
+            start_g = statistics.median(baseline)
+            m["baseline_median_g"] = round(start_g, 3)
+            if start_g >= cfg.empty_threshold_g:
+                return OracleResult(
+                    "load_cell", "NOT_EMPTY_AT_START", f"plate already read {start_g:.1f} g at the start of the episode", m
+                )
 
     mean = statistics.fmean(window)
     std = statistics.pstdev(window)
@@ -155,6 +170,8 @@ def fuse(sensor: OracleResult, gripper: OracleResult, video: OracleResult) -> tu
         return UNKNOWN, ["object too light for the configured load-cell thresholds; recalibrate or lower them"]
     if s == "NO_DATA":
         return UNKNOWN, ["no usable load-cell evidence; refusing to judge from video alone"]
+    if s == "NOT_EMPTY_AT_START":
+        return UNKNOWN, ["plate was not empty at the start (leftover object or bad tare); the final load cannot be attributed to this trial"]
     if s == "UNSTABLE":
         return UNKNOWN, ["load cell had not settled by end of episode"]
     if s == "OVERLOAD":

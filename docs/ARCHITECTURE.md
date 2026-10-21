@@ -22,7 +22,7 @@
 
 TaskWitness 刻意独立于被测策略：它不接触策略内部状态，不发送任何控制命令，判定时也忽略策略自报的成功结果。
 
-## 数据流（v0.2）
+## 数据流（v0.4）
 
 ```
 原始日志 ──calibrate──► 校准文件
@@ -44,18 +44,22 @@ TaskWitness 刻意独立于被测策略：它不接触策略内部状态，不�
 | --- | --- |
 | `core` | 判定结果、错误类型、严格的 episode 校验（有限数值、数据流结构）、证据包组装与完整性摘要。 |
 | `oracle` | `PlaceOracle`：称重最终状态（`PLACED`、`ABSENT`、`PARTIAL_LOAD`、`OVERLOAD`、`UNSTABLE`、`NO_DATA`、`UNRESOLVABLE`）、夹爪状态、视频位置，以及融合规则。 |
+| `grasp` | `GraspOracle`：根据夹爪手指最终停在哪里，对照物体的宽度区间判断抓取；接近区间边缘或手指仍在移动时输出 UNKNOWN。使用机器人自身的夹爪位置，因此独立于策略自报结果，但不是外部传感器。 |
+| `simulation` | 带已知真值的物理仿真（放置、按钮），噪声、掉线、跟踪器失效、时钟偏差均可调。标签来自潜在的真实经过，从不来自任何 Oracle。 |
 | `button` | `ButtonPressOracle`：接触段的抖动合并与最短按压时长、观测缺口、结束时仍按下、按压次数限制；视频只能否决。 |
 | `api` | `verify_episode` 按 `task.type` 分发；`judge` 返回 `Verdict`。 |
 | `config` | Oracle 配置文件，严格校验；其摘要写入报告。 |
 | `calibration` | 称重传感器去皮与标定（含噪声与残差）；相机单应矩阵（归一化 DLT，含重投影误差）。纯 Python。 |
 | `adapters` | 把 `t_ms,value` 日志和跟踪器输出转为 episode；严格解析、时钟对齐、来源摘要。 |
 | `vision` | 可选（`[vision]`）：支持感兴趣区域的颜色块跟踪器；假定恒定帧率的视频读取。 |
-| `evaluate` | Wilson 区间、精确 McNemar 检验、按分层的绝对/条件漏判与审计覆盖率、外部判定器审计（AUC、ECE、成功偏差）、预测增强的成功率估计。 |
+| `evaluate` | Wilson 区间、精确 McNemar 检验、序贯成对比较、按分层的绝对/条件漏判与审计覆盖率、外部判定器审计（AUC、ECE、成功偏差）、成功率估计。 |
+| `inference` | 任意时刻有效的序贯检验（下注式 e-过程）、Waudby-Smith–Ramdas 区间、有限样本预测增强推断、分裂保形上界。纯 Python；统计保证由测试中的模拟检验。 |
+| `thresholds` | 用已知正常的录像对 PlaceOracle 阈值做保形校准。 |
 | `signing` | 可选（`[sign]`）：对证据包做 Ed25519 签名，需显式固定公钥。 |
 | `integrations.inspect_robots` | 为 Inspect Robots 提供 `taskwitness` 和 `taskwitness_unknown` 两个 scorer，通过 entry point 注册。 |
 | `cli` | 全部命令行命令。 |
 
-核心部分（`core`、各 Oracle、`api`、`config`、`calibration`、`adapters`、`evaluate`）没有任何第三方依赖。
+核心部分（`core`、各 Oracle、`api`、`config`、`calibration`、`adapters`、`evaluate`、`inference`、`thresholds`）没有任何第三方依赖。
 
 ## 设计原则
 
@@ -73,7 +77,6 @@ TaskWitness 刻意独立于被测策略：它不接触策略内部状态，不�
 - WitnessNode 固件与实时串口记录器（目前：任何能写出 `t_ms,value` 的记录工具即可）。
 - LeRobot 数据集适配器（目前：导出逐回合分数后使用 `audit`）。
 - 基于学习或 VLM 的视频检测器（目前：颜色块基线）。
-- 任意时刻有效的序贯检验（STEP / N-SCORE）与有限样本 PPI 界。
-- 用已知正常记录对 Oracle 阈值做保形校准。
+- STEP 的精确停止规则、N-SCORE 的部分得分指标、SureSim 的真实/仿真成对修正项（目前：针对成对二元结果的较简单序贯检验）。
 
 这些取舍背后的理由见 [RESEARCH.md](RESEARCH.md)。

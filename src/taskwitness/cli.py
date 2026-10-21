@@ -26,6 +26,8 @@ from taskwitness.calibration import CameraCalibration, LoadCellCalibration, fit_
 from taskwitness.config import config_digest, load_config
 from taskwitness.core import FAIL, PASS, UNKNOWN, VERDICTS, verify_bundle_integrity
 from taskwitness.evaluate import Row, judge_audit, success_rate_estimate, summarize
+from taskwitness.simulation import PRESETS, SimConfig, preset, simulate_dataset
+from taskwitness.thresholds import calibrate_thresholds, window_stats
 
 EXIT_CODES = {PASS: 0, FAIL: 1, UNKNOWN: 2}
 EXIT_ERROR = 3
@@ -171,12 +173,14 @@ def _all_synthetic(results: list[dict[str, Any]]) -> bool:
 def cmd_evaluate(args: argparse.Namespace) -> int:
     configs = load_config(args.config)
     results, errors = _run_all(args.directories, configs)
+    if args.order_by:
+        results = _ordered(results, args.order_by)
     rows = _rows(results, args.by)
     report = {
         "taskwitness_version": __version__,
         "config_sha256": config_digest(configs),
         "all_synthetic": _all_synthetic(results),
-        **summarize(rows, ["taskwitness", "vision_only"], compare=("vision_only", "taskwitness")),
+        **summarize(rows, ["taskwitness", "vision_only"], compare=("vision_only", "taskwitness"), alpha=args.alpha),
         "episodes_evidence_sha256": {r["bundle"]["episode_id"]: r["bundle"]["integrity"]["evidence_sha256"] for r in results},
         "errors": errors,
     }
@@ -192,7 +196,22 @@ def cmd_evaluate(args: argparse.Namespace) -> int:
     p = report["paired_false_pass"]
     _say(f"paired false passes: vision-only only {p['vision_only_only']}, taskwitness only {p['taskwitness_only']}, "
          f"exact McNemar one-sided p = {p['p_one_sided']:.4g}")
+    q = report["paired_false_pass_sequential"]
+    verdict = f"rejects at discordant pair {q['stopped_at_pair']}" if q["rejected"] else "does not reject"
+    _say(f"sequential test (anytime-valid, alpha {q['alpha']}): {verdict}; anytime p = {q['anytime_p']:.4g} "
+         f"over {q['discordant_pairs']} discordant pairs")
     return EXIT_ERROR if errors else 0
+
+
+def _ordered(results: list[dict[str, Any]], tag: str) -> list[dict[str, Any]]:
+    """Sort episodes by a numeric tag (e.g. trial number) so sequential tests follow collection order."""
+    def key(r: dict[str, Any]) -> float:
+        try:
+            return float(r["episode"].get("tags", {})[tag])
+        except (KeyError, TypeError, ValueError):
+            raise AdapterError(f"--order-by {tag}: episode {r['bundle']['episode_id']} has no numeric tag {tag!r}") from None
+
+    return sorted(results, key=key)
 
 
 def _read_judge(path: str) -> dict[str, Any]:
@@ -275,11 +294,15 @@ def cmd_estimate(args: argparse.Namespace) -> int:
         "errors": errors,
     }
     _write(report, args.out)
-    ppi = report["prediction_powered"]
-    if "estimate" in ppi:
-        _say(f"success rate (prediction-powered): {ppi['estimate']:.3f}, {args.confidence:.0%} CI {ppi['ci']}")
-    else:
-        _say(f"prediction-powered estimate unavailable: {ppi['error']}")
+    _say(f"labels only (Wilson):          {_fmt_rate(report['labels_only'])}")
+    _say(f"labels only (finite-sample):   CI {report['labels_only_finite_sample']['ci']}")
+    for key, name in (("prediction_powered", "prediction-powered (CLT):  "), ("prediction_powered_finite_sample", "prediction-powered (finite): ")):
+        ppi = report[key]
+        if "ci" in ppi:
+            _say(f"{name} CI {ppi['ci']}")
+        else:
+            _say(f"{name} unavailable: {ppi['error']}")
+    _say("choose which interval to report before looking; picking the narrowest afterwards voids its coverage")
     return EXIT_ERROR if errors else 0
 
 
@@ -319,6 +342,67 @@ def cmd_calibrate_camera(args: argparse.Namespace) -> int:
     cal = fit_homography(pixels, plate)
     _write(cal.to_dict(), args.out)
     _say(f"{cal.points} points, reprojection rms {cal.rms_error:.4g}, max {cal.max_error:.4g} (plate units)")
+    return 0
+
+
+def _grams_series(path: str, cal: LoadCellCalibration | None) -> list[tuple[float, float]]:
+    rows, _ = read_series(Path(path).read_text(encoding="utf-8").splitlines(), path)
+    try:
+        values = [float(v) for _, v in rows]
+    except ValueError as exc:
+        raise AdapterError(f"{path}: readings must be numbers ({exc})") from None
+    return [(t / 1000.0, cal.to_grams(v) if cal else v) for (t, _), v in zip(rows, values)]
+
+
+def cmd_calibrate_thresholds(args: argparse.Namespace) -> int:
+    cal = LoadCellCalibration.from_dict(read_json(args.load_cell_cal)) if args.load_cell_cal else None
+    empty = [w for path in args.empty for w in window_stats(_grams_series(path, cal), args.window_s, args.min_samples)]
+    objects: dict[float, list[tuple[float, float]]] = {}
+    for spec in args.object or []:
+        mass, _, path = spec.partition("=")
+        try:
+            mass_g = float(mass)
+        except ValueError:
+            raise AdapterError(f"--object must look like MASS_G=FILE, got {spec!r}") from None
+        objects.setdefault(mass_g, []).extend(window_stats(_grams_series(path, cal), args.window_s, args.min_samples))
+    report = calibrate_thresholds(empty, objects, args.alpha, args.window_s)
+    config_doc = {"place": report["place_config"]}
+    _write({**report, "config": config_doc}, args.out)
+    _say(f"{report['windows']['empty']} empty windows, objects {report['windows']['object']}")
+    _say("place config: " + json.dumps(report["place_config"]))
+    for warning in report["warnings"]:
+        _say(f"WARNING: {warning}")
+    return 0
+
+
+def cmd_simulate(args: argparse.Namespace) -> int:
+    from dataclasses import fields
+
+    types = {f.name: f.type for f in fields(SimConfig)}
+    overrides: dict[str, float] = {}
+    for spec in args.set or []:
+        key, sep, value = spec.partition("=")
+        if not sep or key not in types:
+            raise AdapterError(f"--set must look like NAME=VALUE with NAME one of {sorted(types)}, got {spec!r}")
+        try:
+            overrides[key] = float(value)
+        except ValueError:
+            raise AdapterError(f"--set {key}: {value!r} is not a number") from None
+    mix = read_json(args.mix) if args.mix else None
+    cfg = preset(args.preset, **overrides)
+    episodes = simulate_dataset(args.kind, args.n, args.seed, cfg, mix)
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    for ep in episodes:
+        ep["tags"]["rig"] = args.preset
+        (out / f"{ep['episode_id']}.json").write_text(json.dumps(ep, indent=1) + "\n", encoding="utf-8")
+    modes: dict[str, int] = {}
+    for ep in episodes:
+        modes[ep["tags"]["failure_mode"]] = modes.get(ep["tags"]["failure_mode"], 0) + 1
+    passes = sum(ep["label"]["verdict"] == "PASS" for ep in episodes)
+    _say(f"wrote {len(episodes)} simulated {args.kind} episodes to {out} ({passes} true PASS, {len(episodes) - passes} true FAIL)")
+    _say("failure modes: " + ", ".join(f"{k} {v}" for k, v in sorted(modes.items())))
+    _say("SYNTHETIC: results on these episodes show how the method behaves under the simulator's assumptions, not on a real rig")
     return 0
 
 
@@ -474,6 +558,8 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("evaluate", help="false-pass / false-fail statistics against human labels")
     p.add_argument("directories", nargs="+")
     p.add_argument("--by", help="break results down by this episode tag (e.g. failure_mode)")
+    p.add_argument("--order-by", help="numeric tag giving the collection order for the sequential test (default: file name)")
+    p.add_argument("--alpha", type=float, default=0.05, help="level of the sequential test")
     p.add_argument("--out")
     config_arg(p)
     p.set_defaults(func=cmd_evaluate)
@@ -504,6 +590,15 @@ def build_parser() -> argparse.ArgumentParser:
     c.add_argument("--ref", action="append", required=True, help="MASS_G=FILE, repeat for each reference mass")
     c.add_argument("--out")
     c.set_defaults(func=cmd_calibrate_load_cell)
+    c = csub.add_parser("thresholds", help="conformal PlaceOracle thresholds from known-good recordings")
+    c.add_argument("--empty", nargs="+", required=True, help="logs recorded with the plate empty (t_ms,value)")
+    c.add_argument("--object", action="append", help="MASS_G=FILE with the object resting on the plate; repeatable")
+    c.add_argument("--load-cell-cal", help="load-cell calibration if the logs are raw counts")
+    c.add_argument("--window-s", type=float, default=1.0, help="window length, = settle_window_s of the oracle")
+    c.add_argument("--min-samples", type=int, default=5)
+    c.add_argument("--alpha", type=float, default=0.05, help="a known-good window exceeds a threshold with probability <= alpha")
+    c.add_argument("--out")
+    c.set_defaults(func=cmd_calibrate_thresholds)
     c = csub.add_parser("camera", help="pixel-to-plate homography from >= 4 point pairs")
     c.add_argument("--points", required=True, help='JSON list of {"pixel": [u, v], "plate": [x, y]}')
     c.add_argument("--out")
@@ -528,6 +623,16 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--lenient", action="store_true", help="skip malformed log lines instead of failing")
     p.add_argument("--out")
     p.set_defaults(func=cmd_ingest)
+
+    p = sub.add_parser("simulate", help="generate physics-based synthetic episodes with known ground truth")
+    p.add_argument("kind", choices=["place", "button_press"])
+    p.add_argument("--n", type=int, default=500, help="number of episodes")
+    p.add_argument("--seed", type=int, default=1)
+    p.add_argument("--preset", choices=sorted(PRESETS), default="lab", help="rig quality")
+    p.add_argument("--set", action="append", help="override one setting, e.g. load_noise_g=2.0; repeatable")
+    p.add_argument("--mix", help="JSON {failure_mode: weight} replacing the default mix")
+    p.add_argument("--out", required=True, help="directory for the episode files")
+    p.set_defaults(func=cmd_simulate)
 
     p = sub.add_parser("track", help="track a coloured object or marker in a video (needs [vision] extra)")
     p.add_argument("video")

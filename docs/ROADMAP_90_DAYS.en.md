@@ -16,6 +16,7 @@ Start date: 2026-10-21. Principle: every phase has checkable acceptance criteria
 
 ## D8–30: Real experiments (phone + load cell)
 
+- [x] Physics simulation study and a public-dataset test (v0.4; see [simulation](SIMULATION.en.md) and [real data](REAL_DATA.en.md)): several oracle problems found and fixed
 - [ ] Build the WitnessNode prototype (see `hardware/README.en.md`): load-cell module + microcontroller + USB serial
 - [x] Sensor adapter: turn serial readings into `taskwitness.episode/v0` (`taskwitness ingest`, v0.2)
 - [x] Load-cell and camera calibration (`taskwitness calibrate`, v0.2)
@@ -44,7 +45,7 @@ Start date: 2026-10-21. Principle: every phase has checkable acceptance criteria
 - [ ] Collect reproduction results from external robot setups
 - [ ] Only after reproducible real results exist: Show HN, relevant Reddit communities and a Hugging Face Space
 - [x] Evidence-bundle signing (Ed25519, `taskwitness sign`, v0.2; a signature proves origin, not correctness)
-- [ ] Anytime-valid sequential tests and finite-sample PPI bounds (see [research notes](RESEARCH.en.md))
+- [x] Anytime-valid sequential test, finite-sample intervals and conformal threshold calibration (v0.3, see [research notes](RESEARCH.en.md); the full STEP / N-SCORE methods are not implemented)
 
 **Done when:** at least 1 real experiment result has been independently reproduced by an outside contributor and published.
 

@@ -77,14 +77,18 @@ def _contact_runs(samples: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], 
     runs: list[dict[str, Any]] = []
     current: dict[str, Any] | None = None
     prev_pressed: bool | None = None
+    prev_t: float | None = None
     for s in samples:
         if s["pressed"] and not prev_pressed:
-            current = {"start": s["t"], "end": None, "rising_edge": prev_pressed is False}
+            # `lead` is the last sample known to be open: contact began somewhere after it.
+            current = {"start": s["t"], "last_closed": s["t"], "end": None, "rising_edge": prev_pressed is False, "lead": prev_t}
             runs.append(current)
+        elif s["pressed"] and current is not None:
+            current["last_closed"] = s["t"]
         elif not s["pressed"] and prev_pressed and current is not None:
             current["end"] = s["t"]
             current = None
-        prev_pressed = s["pressed"]
+        prev_pressed, prev_t = s["pressed"], s["t"]
     return runs, bool(samples and samples[0]["pressed"])
 
 
@@ -93,7 +97,7 @@ def _merge_bounce(runs: list[dict[str, Any]], debounce_s: float) -> list[dict[st
     for run in runs:
         prev = merged[-1] if merged else None
         if prev is not None and prev["end"] is not None and run["start"] - prev["end"] < debounce_s:
-            prev["end"] = run["end"]
+            prev["end"], prev["last_closed"] = run["end"], run["last_closed"]
         else:
             merged.append(dict(run))
     return merged
@@ -111,20 +115,26 @@ def switch_oracle(episode: dict[str, Any], cfg: ButtonPressConfig, bounds: tuple
     max_gap = max(b - a for a, b in zip(times, times[1:]))
     runs, pressed_at_start = _contact_runs(samples)
     runs = _merge_bounce(runs, cfg.debounce_s)
-    presses, short, bounces, held = [], [], 0, None
+    presses, short, ambiguous, bounces, held = [], [], [], 0, None
     for run in runs:
         if not run["rising_edge"]:
             continue  # already pressed when observation began: not a press we saw happen
         if run["end"] is None:
             held = run  # contact still open when observation ended: the press never completed
             continue
-        duration = run["end"] - run["start"]
-        if duration < cfg.debounce_s:
-            bounces += 1
-        elif duration < cfg.min_hold_s:
-            short.append(round(duration, 4))
+        # Sampling only brackets the contact: it lasted at least from the first to the last closed
+        # sample, and at most from the sample before the first to the first open sample after.
+        shortest = run["last_closed"] - run["start"]
+        longest = run["end"] - run["lead"]
+        if longest < cfg.min_hold_s:  # cannot have lasted long enough, whatever the sampling
+            if run["end"] - run["start"] < cfg.debounce_s:
+                bounces += 1
+            else:
+                short.append(round(run["end"] - run["start"], 4))
+        elif shortest >= cfg.min_hold_s:
+            presses.append({"start_s": run["start"], "end_s": run["end"], "duration_s": round(run["end"] - run["start"], 4)})
         else:
-            presses.append({"start_s": run["start"], "end_s": run["end"], "duration_s": round(duration, 4)})
+            ambiguous.append({"start_s": run["start"], "shortest_s": round(shortest, 4), "longest_s": round(longest, 4)})
 
     m: dict[str, Any] = {
         "expected_presses": expected,
@@ -132,6 +142,7 @@ def switch_oracle(episode: dict[str, Any], cfg: ButtonPressConfig, bounds: tuple
         "valid_presses": len(presses),
         "presses": presses,
         "short_contacts_s": short,
+        "unresolved_holds": ambiguous,
         "bounces_ignored": bounces,
         "pressed_at_first_sample": pressed_at_start,
         "max_unobserved_gap_s": round(max_gap, 4),
@@ -143,8 +154,25 @@ def switch_oracle(episode: dict[str, Any], cfg: ButtonPressConfig, bounds: tuple
         return OracleResult("switch", "STILL_PRESSED", f"button still pressed at end of episode (since t={held['start']}s)", m)
     if maximum is not None and n > maximum:
         return OracleResult("switch", "TOO_MANY", f"{n} presses, at most {maximum} allowed", m)
+    if maximum is not None and n <= maximum < n + len(ambiguous):
+        return OracleResult(
+            "switch",
+            "UNRESOLVED_HOLD",
+            f"{n} confirmed presses, but {len(ambiguous)} more contact(s) cannot be ruled out as presses at this sampling rate, "
+            f"and at most {maximum} are allowed",
+            m,
+        )
     if n >= expected:
         return OracleResult("switch", "PRESSED", f"{n} complete press(es), {expected} required", m)
+    if ambiguous:
+        worst = ambiguous[0]
+        return OracleResult(
+            "switch",
+            "UNRESOLVED_HOLD",
+            f"{n} of {expected} presses, but a contact lasted between {worst['shortest_s'] * 1000:.0f} and {worst['longest_s'] * 1000:.0f} ms, "
+            f"which cannot be compared with the {cfg.min_hold_s * 1000:.0f} ms hold at this sampling rate",
+            m,
+        )
     if max_gap > cfg.max_gap_s:
         return OracleResult(
             "switch", "UNOBSERVED", f"{n} of {expected} presses seen, but the switch was unobserved for {max_gap:.2f}s", m
@@ -176,6 +204,8 @@ def fuse(switch: OracleResult, video: OracleResult) -> tuple[str, list[str]]:
         return UNKNOWN, ["no usable switch evidence; refusing to judge from video alone"]
     if s == "UNOBSERVED":
         return UNKNOWN, ["switch stream has gaps; a press may have happened unobserved"]
+    if s == "UNRESOLVED_HOLD":
+        return UNKNOWN, ["a contact may or may not have lasted long enough to count; sample the switch faster to resolve it"]
     if s == "STILL_PRESSED":
         return UNKNOWN, ["button is still held down at the end; the press was never completed"]
     if s == "TOO_MANY":

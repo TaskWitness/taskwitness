@@ -111,11 +111,30 @@ future work.
 of two judges on the same episodes use an exact McNemar test, so "fusion beats
 vision" is only claimed when the paired data supports it; on the bundled
 synthetic examples it is deliberately *not* significant (p = 0.0625).
-`taskwitness estimate` applies prediction-powered inference: TaskWitness
-verdicts on every episode plus human labels on a random subset give a success
-rate with a valid interval. **Not yet implemented:** anytime-valid sequential
-tests (STEP / N-SCORE) and finite-sample PPI bounds (SureSim uses
-Waudby-Smith-Ramdas bounds; TaskWitness uses the asymptotic CLT interval).
+
+- **Sequential comparison** (`taskwitness evaluate`). A betting e-process over
+  the discordant pairs (episodes where exactly one judge falsely passes), in the
+  spirit of STEP and N-SCORE: the type-I error stays below alpha however often
+  you look and whenever you stop. It is a simpler test than either paper's, for
+  paired binary outcomes only, not a reimplementation. Checked by simulation:
+  under no difference it rejects in 3.2% of 1,500 runs that peek after every
+  pair (limit 5%); against a true 85/15 split it always rejects, at a median of
+  10 discordant pairs; at 70/30 it rejects 94% of the time within 100 pairs. The
+  order of episodes must be fixed before looking (`--order-by trial`).
+- **Finite-sample intervals** (`taskwitness estimate`). Waudby-Smith-Ramdas
+  betting intervals need no normal approximation. They are valid but
+  conservative: about 50% wider than Wilson at n = 40 (0.44 vs 0.29 at p = 0.5)
+  and coverage near 100%.
+- **Prediction-powered inference**, asymptotic and finite-sample (union bound of
+  two betting intervals, as in SureSim). **Honest limitation, measured:** with a
+  judge that falsely passes 10% of failures, 400 episodes and 40 labels, the
+  finite-sample prediction-powered interval is *wider* than labels alone (0.68
+  vs 0.44). It only wins with an accurate judge and thousands of episodes (for
+  example 5,000 episodes, 200 labels, 2% error each way: 0.18 vs 0.22). Do not
+  expect PPI to rescue a small experiment; `estimate` prints every interval and
+  warns that the one to report must be chosen beforehand.
+- Not implemented: STEP's exact stopping rule, N-SCORE's partial-credit and
+  continuous metrics, and SureSim's paired real/simulation rectifier.
 
 ## 6. Runtime failure prediction is complementary
 
@@ -125,9 +144,14 @@ Waudby-Smith-Ramdas bounds; TaskWitness uses the asymptotic CLT interval).
   conformal prediction on successful rollouts only.
 
 **TaskWitness response.** Different job: TaskWitness verifies the *outcome*
-from outside the policy. The conformal idea, calibrating thresholds from
-recordings of known-good states, fits TaskWitness's load-cell thresholds and is
-a candidate for a future `calibrate thresholds` command.
+from outside the policy. The conformal idea carries over to the oracle's own
+thresholds: `taskwitness calibrate thresholds` takes recordings of known-good
+states (empty plate, correct object resting) and sets the stability, empty and
+mass-tolerance thresholds by split conformal prediction, so a new known-good
+window exceeds each one with probability at most alpha. The tests check this on
+fresh windows. The guarantee is per window and needs exchangeability (same rig,
+no drift); it needs at least 19 windows at alpha = 0.05 and refuses to guess with
+fewer.
 
 ## 7. Provenance is not correctness
 
@@ -138,6 +162,27 @@ not changed; it does not show the content is right.
 **TaskWitness response.** `taskwitness sign` / `verify-signature` add Ed25519
 signatures over evidence bundles, with the trusted key pinned explicitly, and
 the documentation states what a signature does not prove.
+
+## 8. What the tests found (simulation and a public dataset)
+
+Two checks of the ideas above, both documented in full: [SIMULATION.en.md](SIMULATION.en.md) and
+[REAL_DATA.en.md](REAL_DATA.en.md).
+
+- **Physical evidence helped where the papers say vision struggles.** On REASSEMBLE
+  picks, a gripper-width check falsely passed 2 of 24 real failures, against 24
+  for "trust completion" and 21 for a band-free check, in line with FailBench's
+  finding that visual or completion-based judging is biased toward success.
+- **A verifier's own error modes show up only when you test it.** The simulation
+  found that a leftover object on the plate could be counted as a success, and that
+  slow switch sampling made brushes look like presses; both were fixed.
+- **The conformal guarantee needs more than a calibration set.** On real data,
+  calibrated for at most 10% of known-good windows to be called "moving", 16.5% were:
+  recordings differ session to session. This is the exchangeability caveat of
+  split conformal prediction made concrete; it is also why `taskwitness evaluate`
+  reports realized rates rather than trusting the nominal alpha.
+- **Cheap sensors are not interchangeable.** The robot's own wrist force sensor
+  (11.6 g noise, 143 g between-pose offset) cannot stand in for a load cell on a
+  52 g block; TaskWitness correctly refuses to judge with it.
 
 ## Open questions we want real data for
 

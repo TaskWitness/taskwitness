@@ -1,6 +1,6 @@
 """TaskWitness: an independent, sensor-grounded verification layer for Physical AI."""
 
-__version__ = "0.2.0"
+__version__ = "0.4.0"
 
 from taskwitness.api import Verdict, judge, verify_episode  # noqa: E402
 

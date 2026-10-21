@@ -24,6 +24,8 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import Any
 
+from taskwitness.inference import ppi_finite_sample, sequential_paired_test, wsr_interval
+
 from taskwitness.core import FAIL, PASS, UNKNOWN
 
 DECISIVE = (PASS, FAIL)
@@ -104,7 +106,27 @@ def paired_false_pass(rows: list[Row], a: str, b: str) -> dict[str, Any]:
     return result
 
 
-def summarize(rows: list[Row], judges: list[str], compare: tuple[str, str] | None = None) -> dict[str, Any]:
+def sequential_false_pass(rows: list[Row], a: str, b: str, alpha: float = 0.05) -> dict[str, Any]:
+    """Anytime-valid version of `paired_false_pass`, reading the episodes in the given order.
+
+    The order must be fixed before looking at any result (for example trial number);
+    reordering until the test rejects voids the guarantee.
+    """
+    outcomes = []
+    for r in rows:
+        if r.label == FAIL and a in r.verdicts and b in r.verdicts:
+            a_err, b_err = r.verdicts[a] == PASS, r.verdicts[b] == PASS
+            if a_err != b_err:
+                outcomes.append(int(a_err))
+    result = sequential_paired_test(outcomes, alpha)
+    result["hypothesis"] = f"{b} has fewer false passes than {a}"
+    result["order"] = "as given; must be fixed before looking at results"
+    return result
+
+
+def summarize(
+    rows: list[Row], judges: list[str], compare: tuple[str, str] | None = None, alpha: float = 0.05
+) -> dict[str, Any]:
     labels = [r.label for r in rows]
     report: dict[str, Any] = {
         "episodes": len(rows),
@@ -114,6 +136,7 @@ def summarize(rows: list[Row], judges: list[str], compare: tuple[str, str] | Non
     }
     if compare:
         report["paired_false_pass"] = paired_false_pass(rows, *compare)
+        report["paired_false_pass_sequential"] = sequential_false_pass(rows, *compare, alpha=alpha)
     strata: dict[str, list[Row]] = defaultdict(list)
     for r in rows:
         strata[r.stratum].append(r)
@@ -222,6 +245,15 @@ def ppi_mean(
 
 
 def success_rate_estimate(rows: list[Row], judge: str, unknown_as: float = 0.5, confidence: float = 0.95) -> dict[str, Any]:
+    """Success rate from verdicts on every episode and labels on a random subset.
+
+    Reports every interval so their widths can be compared, but choose which one
+    you will report *before* looking: picking the narrowest afterwards voids the
+    coverage guarantee. The prediction-powered intervals only beat the labels-only
+    ones when the judge is accurate and there are many unlabeled episodes.
+    """
+    alpha = 1 - confidence
+
     def f(r: Row) -> float:
         return {PASS: 1.0, FAIL: 0.0}.get(r.verdicts[judge], unknown_as)
 
@@ -231,12 +263,18 @@ def success_rate_estimate(rows: list[Row], judge: str, unknown_as: float = 0.5, 
     out: dict[str, Any] = {
         "judge": judge,
         "unknown_counts_as": unknown_as,
-        "labels_only": {**_rate(int(sum(y)), len(y)), "ci95": wilson(int(sum(y)), len(y), confidence)},
         "judge_only_uncorrected": round(statistics.fmean(f(r) for r in rows), 6) if rows else None,
+        "labels_only": _rate(int(sum(y)), len(y)),
+        "labels_only_finite_sample": {"ci": wsr_interval(y, alpha), "method": "Waudby-Smith-Ramdas betting interval"},
         "assumption": "labeled episodes must be a uniformly random sample of all episodes",
     }
     try:
-        out["prediction_powered"] = ppi_mean([f(r) for r in unlabeled], [f(r) for r in labeled], y, confidence)
+        out["prediction_powered"] = {**ppi_mean([f(r) for r in unlabeled], [f(r) for r in labeled], y, confidence), "method": "asymptotic (CLT)"}
+        out["prediction_powered_finite_sample"] = {
+            **ppi_finite_sample([f(r) for r in unlabeled], [f(r) for r in labeled], y, alpha),
+            "method": "union bound of two betting intervals",
+        }
     except ValueError as exc:
         out["prediction_powered"] = {"error": str(exc)}
+        out["prediction_powered_finite_sample"] = {"error": str(exc)}
     return out

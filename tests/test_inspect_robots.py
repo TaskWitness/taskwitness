@@ -102,11 +102,13 @@ def _record(states, times, termination="success"):
 
 
 def test_episode_from_trial_maps_state_and_claim():
-    states = [{"load_cell_g": np.array([52.0]), "gripper": np.array([0.9])} for _ in range(12)]
-    record = _record(states, [i / 10 for i in range(12)])
+    # An empty plate at the start, the object placed and released halfway through.
+    states = [{"load_cell_g": np.array([0.0 if i < 5 else 52.0]), "gripper": np.array([0.0 if i < 5 else 0.9])} for i in range(30)]
+    record = _record(states, [i / 10 for i in range(30)])
     episode = episode_from_trial(record, TARGET)
     assert episode["claim"] == {"source": "termination_reason", "success": True}
-    assert episode["sensors"]["gripper"][0]["state"] == "open"
+    assert episode["sensors"]["gripper"][0]["state"] == "closed"
+    assert episode["sensors"]["gripper"][-1]["state"] == "open"
     score = taskwitness_scorer()(record, TARGET)
     assert score.value is True and score.metadata["verdict"] == "PASS"
 
