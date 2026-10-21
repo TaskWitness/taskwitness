@@ -53,12 +53,25 @@ TaskWitness 读写带版本号的 JSON 文档，每种文档由 `schema` 字段�
 }
 ```
 
+### 抓取任务
+
+```json
+{
+  "schema": "taskwitness.episode/v0",
+  "episode_id": "pick-017",
+  "task": {"type": "grasp", "object": {"name": "round peg 2", "width_m_min": 0.004, "width_m_max": 0.008}},
+  "sensors": {"gripper_width": [{"t": 0.0, "width_m": 0.040}, {"t": 0.033, "width_m": 0.039}]}
+}
+```
+
+`gripper_width` 是手指位置，单位为米。由最后 `settle_window_s`（默认 0.5 秒）决定：停在区间内为 PASS；闭合超过区间（手指之间没有东西）或比物体更宽为 FAIL；接近区间边缘（`margin_m` 以内）、手指仍在移动或样本太少为 UNKNOWN。区间可用卡尺测得，或取已知成功抓取的范围（见 [REAL_DATA.md](REAL_DATA.md)）。
+
 ### 字段
 
 | 字段 | 是否必需 | 说明 |
 | --- | --- | --- |
 | `schema`、`episode_id`、`task` | 是 | `episode_id` 为非空字符串。 |
-| `task.type` | 是 | `place` 或 `button_press`。 |
+| `task.type` | 是 | `place`、`button_press` 或 `grasp`。 |
 | `task.object.mass_g` | 放置任务 | 正数，用于与称重读数比对。 |
 | `task.target_zone` | 放置任务 | 与 `video[].object_xy` 同一坐标系下的轴对齐矩形。假定称重传感器正好位于该区域下方。 |
 | `task.button.expected_presses` | 否 | 不小于 1 的整数，默认 1。 |
@@ -68,6 +81,8 @@ TaskWitness 读写带版本号的 JSON 文档，每种文档由 `schema` 字段�
 | `video` | 否 | 预先计算好的位置（放置任务为 `object_xy`，按钮任务为 `tool_xy`），置信度范围 [0, 1]。 |
 | `sensors.load_cell` | 放置任务 | 目标称重板上的重量（克）。没有它时，放置任务的判定永远是 UNKNOWN。 |
 | `sensors.gripper` | 否 | `open` / `closed`。 |
+| `task.object.width_m_min`、`width_m_max` | 抓取任务 | 物体宽度区间，单位为米。 |
+| `sensors.gripper_width` | 抓取任务 | `width_m`：手指位置，单位为米。没有它时，抓取任务的判定永远是 UNKNOWN。 |
 | `sensors.button` | 按钮任务 | `pressed: true/false`，按钮自身的触点状态。没有它时，按钮任务的判定永远是 UNKNOWN。 |
 | `tags` | 否 | 自由格式的字符串，例如 `failure_mode`；`evaluate --by` 按它分组。 |
 | `provenance` | 否 | 由 `ingest` 写入：工具版本、`t0_ms`、每个源文件的 SHA-256。 |
@@ -77,7 +92,7 @@ TaskWitness 读写带版本号的 JSON 文档，每种文档由 `schema` 字段�
 
 ### ButtonPressOracle 如何计数
 
-一次按压是指：在一个“未按下”样本之后开始（上升沿）、持续至少 `min_hold_s`、并以松开结束的一段接触。短于 `debounce_s` 的间隙和接触视为抖动，会被合并或忽略。在最后一个样本时触点仍闭合，说明按压没有完成（UNKNOWN）。如果看到的按压次数少于要求，且开关数据流存在长于 `max_gap_s` 的缺口（包括回合开头和结尾），结果为 UNKNOWN，而不是 FAIL。
+一次按压是指：在一个“未按下”样本之后开始（上升沿）、确定持续至少 `min_hold_s`、并以松开结束的一段接触。采样只能给出接触时长的上下界：它至少持续了从第一个到最后一个闭合样本的时间，至多持续了从之前一个样本到之后一个样本的时间。确定足够长则计为按压，确定太短则不计，介于两者之间为 `UNRESOLVED_HOLD`（UNKNOWN）。短于 `debounce_s` 的间隙和接触视为抖动，会被合并或忽略。在最后一个样本时触点仍闭合，说明按压没有完成（UNKNOWN）。如果看到的按压次数少于要求，且开关数据流存在长于 `max_gap_s` 的缺口（包括回合开头和结尾），结果为 UNKNOWN，而不是 FAIL。
 
 ## 证据包：`taskwitness.evidence/v0`
 

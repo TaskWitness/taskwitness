@@ -16,6 +16,7 @@ Start date: 2026-10-21. Principle: every phase has checkable acceptance criteria
 
 ## D8–30: Real experiments (phone + load cell)
 
+- [x] Physics simulation study and a public-dataset test (v0.4; see [simulation](SIMULATION.en.md) and [real data](REAL_DATA.en.md)): several oracle problems found and fixed
 - [ ] Build the WitnessNode prototype (see `hardware/README.en.md`): load-cell module + microcontroller + USB serial
 - [x] Sensor adapter: turn serial readings into `taskwitness.episode/v0` (`taskwitness ingest`, v0.2)
 - [x] Load-cell and camera calibration (`taskwitness calibrate`, v0.2)

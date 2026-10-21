@@ -126,6 +126,7 @@ taskwitness check bundle.json --episode examples/synthetic/02_not_released.json
 | Load cell (final settle window) | Gripper | Video | Verdict |
 | --- | --- | --- | --- |
 | object too light to tell from an empty plate | any | any | UNKNOWN |
+| plate already reads non-empty at the start (leftover object, bad tare) | any | any | UNKNOWN (the final load cannot be attributed to this trial) |
 | no / too few samples | any | any | UNKNOWN |
 | not settled | any | any | UNKNOWN |
 | heavier than the object | any | any | UNKNOWN |
@@ -145,13 +146,14 @@ taskwitness check bundle.json --episode examples/synthetic/02_not_released.json
 | --- | --- | --- |
 | no data | any | UNKNOWN |
 | still pressed at the end | any | UNKNOWN (press not completed) |
+| too few presses, and a contact's duration cannot be compared with the minimum hold at this sampling rate | any | UNKNOWN (sample the switch faster) |
 | too few presses and the stream has gaps | any | UNKNOWN (may have been missed) |
 | more than `max_presses` | any | **FAIL** |
 | no or too few presses, fully observed | any | **FAIL** (hover or too little force) |
 | required complete presses | tool never at the button | UNKNOWN (something else may have pressed it) |
 | required complete presses | tool at the button / unavailable | **PASS** |
 
-Contact bounce is merged; contacts shorter than `min_hold_s` do not count as presses.
+Contact bounce is merged. Sampling only brackets a contact's duration: it counts as a press only if guaranteed at least `min_hold_s`, does not count if guaranteed shorter, and is UNKNOWN in between.
 
 </details>
 
@@ -175,6 +177,7 @@ record logs ─► calibrate ─► track ─► ingest ─► verify / evaluate
 | `evaluate` | Against human labels: conditional and absolute misses, false fails, UNKNOWN rate (with Wilson intervals), audit coverage, per-failure-mode strata, exact McNemar test, and an **anytime-valid sequential test** (look whenever you like, stop whenever you like, the error rate stays controlled) |
 | `audit` | Audit an external judge (Robometer, TOPReward, a VLM, an operator) on the same episodes: balanced accuracy, ROC-AUC, calibration error, success bias |
 | `estimate` | Success-rate intervals: labels only (Wilson and finite-sample) and prediction-powered (asymptotic and finite-sample). Reports honestly that with an inaccurate judge or few episodes the prediction-powered interval is wider than labels alone |
+| `simulate` | Generate physics-based place / button episodes with known ground truth, with adjustable noise, dropouts, tracker failures and clock offsets; see the [simulation study](docs/SIMULATION.en.md) |
 | `keygen` / `sign` / `verify-signature` | Ed25519 signatures for bundles (needs `[sign]`) |
 
 The full protocol is in the [experiment guide](docs/EXPERIMENT_GUIDE.en.md).
@@ -202,23 +205,25 @@ The embodiment only needs to report `load_cell_g` (and optionally `gripper` / `b
 
 ## 📚 Research basis
 
-TaskWitness's design follows recent work: FailBench (success bias of VLM judges), coverage shift (better policies leave failures that are harder to see), No Free Checker (verifier credibility falls as availability rises), LeRobot v0.6 reward models (Robometer, TOPReward), and STEP / N-SCORE / SureSim / PPI (statistics for few real trials). See [docs/RESEARCH.en.md](docs/RESEARCH.en.md).
+TaskWitness's design follows recent work (the test on real data is in [docs/REAL_DATA.en.md](docs/REAL_DATA.en.md)): FailBench (success bias of VLM judges), coverage shift (better policies leave failures that are harder to see), No Free Checker (verifier credibility falls as availability rises), LeRobot v0.6 reward models (Robometer, TOPReward), and STEP / N-SCORE / SureSim / PPI (statistics for few real trials). See [docs/RESEARCH.en.md](docs/RESEARCH.en.md).
 
 ---
 
-## 📦 What's in v0.3
+## 📦 What's in v0.4
 
 **Honest status: pre-alpha.** Every example in this repo is synthetic; no result here is yet a measurement from a real robot, camera or load cell.
 
 | ✅ Available now | 🛠️ Not built yet |
 | --- | --- |
-| `PlaceOracle`, `ButtonPressOracle` | WitnessNode firmware and a live serial recorder |
+| `PlaceOracle`, `ButtonPressOracle`, `GraspOracle` | WitnessNode firmware and a live serial recorder |
 | Strict episode validation (rejects NaN/inf, points at the bad field) | LeRobot dataset adapter |
 | Load-cell and camera calibration, conformal thresholds, log ingestion, colour-blob video tracking | Learned or VLM-based video detectors |
-| `evaluate` / `audit` / `estimate`: Wilson intervals, McNemar, sequential test, finite-sample intervals | Results on real hardware |
+| `evaluate` / `audit` / `estimate`: Wilson intervals, McNemar, sequential test, finite-sample intervals | Real-hardware results for the load-cell and button oracles (no public dataset records those sensors) |
+| Physics-based simulator and simulation study (`simulate`, `examples/simulation/study.py`) | |
+| GraspOracle tested on real data (REASSEMBLE) | |
 | Inspect Robots scorers (tested in a real eval loop) | |
 | Deterministic, tamper-evident bundles with optional signatures | |
-| 11 synthetic episodes, 140 tests (including simulations of the statistical guarantees), CI | |
+| 165 tests (including simulations of the statistical guarantees), CI | |
 
 ---
 
@@ -239,7 +244,7 @@ Details: [docs/ROADMAP_90_DAYS.en.md](docs/ROADMAP_90_DAYS.en.md) · Hardware no
 
 | Name | What | Status |
 | --- | --- | --- |
-| **TaskWitness Core** | Open-source verification SDK | v0.3 (this repo) |
+| **TaskWitness Core** | Open-source verification SDK | v0.4 (this repo) |
 | **WitnessNode** | Low-cost sensor box | design notes |
 | **WitnessKit** | Physical experiment kit | planned |
 | **WitnessBench** | Community test dataset | planned |

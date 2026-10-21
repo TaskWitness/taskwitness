@@ -16,6 +16,7 @@
 
 ## D8–30：真实实验（手机 + 称重传感器）
 
+- [x] 物理仿真研究与公开数据集检验（v0.4，见 [仿真](SIMULATION.md) 与 [真实数据](REAL_DATA.md)）：定位并修正了 Oracle 的若干问题
 - [ ] 搭建 WitnessNode 原型（见 `hardware/README.md`）：称重模块 + 微控制器 + USB 串口
 - [x] 传感器适配器：把串口读数写成 `taskwitness.episode/v0`（`taskwitness ingest`，v0.2）
 - [x] 称重与相机校准（`taskwitness calibrate`，v0.2）

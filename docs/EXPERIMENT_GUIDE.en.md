@@ -10,6 +10,19 @@ exists today. The hardware itself is described in [hardware/README.en.md](../har
 record logs ─► calibrate ─► track video ─► ingest ─► label ─► verify / evaluate / estimate
 ```
 
+## Before you build anything: rehearse with the simulator
+
+```bash
+taskwitness simulate place --n 500 --preset lab --set load_noise_g=1.0 --out sim
+taskwitness evaluate sim --by failure_mode --order-by trial
+```
+
+It generates episodes with known ground truth at the noise level you expect, so you
+can see how many trials a decision needs, which failure modes land in UNKNOWN, and
+whether your sample rate and thresholds are adequate, before collecting real data.
+Its failure modes and noise levels are assumptions: see [SIMULATION.en.md](SIMULATION.en.md).
+Do not use the simulator's numbers as results.
+
 ## 0. Freeze the plan before collecting data
 
 Write down, and commit to git *before* the first trial:

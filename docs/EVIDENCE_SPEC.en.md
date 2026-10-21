@@ -54,12 +54,29 @@ TaskWitness reads and writes versioned JSON documents, each identified by its
 }
 ```
 
+### Grasp task
+
+```json
+{
+  "schema": "taskwitness.episode/v0",
+  "episode_id": "pick-017",
+  "task": {"type": "grasp", "object": {"name": "round peg 2", "width_m_min": 0.004, "width_m_max": 0.008}},
+  "sensors": {"gripper_width": [{"t": 0.0, "width_m": 0.040}, {"t": 0.033, "width_m": 0.039}]}
+}
+```
+
+`gripper_width` is the finger position in metres. The final `settle_window_s`
+(default 0.5 s) decides: stopped inside the band is PASS; closed past it (nothing
+between the fingers) or wider than the object is FAIL; within `margin_m` of a band
+edge, still moving, or too few samples is UNKNOWN. Get the band from calipers or
+from the range of known-good grasps (see [REAL_DATA.en.md](REAL_DATA.en.md)).
+
 ### Fields
 
 | Field | Required | Notes |
 | --- | --- | --- |
 | `schema`, `episode_id`, `task` | yes | `episode_id` is a non-empty string. |
-| `task.type` | yes | `place` or `button_press`. |
+| `task.type` | yes | `place`, `button_press` or `grasp`. |
 | `task.object.mass_g` | place | Positive. Used for load matching. |
 | `task.target_zone` | place | Axis-aligned box in the frame of `video[].object_xy`. The load cell is assumed to sit under exactly this zone. |
 | `task.button.expected_presses` | no | Integer >= 1, default 1. |
@@ -69,6 +86,8 @@ TaskWitness reads and writes versioned JSON documents, each identified by its
 | `video` | no | Pre-computed positions (`object_xy` for place, `tool_xy` for button) with confidence in [0, 1]. |
 | `sensors.load_cell` | place | Grams on the target plate. Without it a place verdict is always UNKNOWN. |
 | `sensors.gripper` | no | `open` / `closed`. |
+| `task.object.width_m_min`, `width_m_max` | grasp | The object's width band in metres. |
+| `sensors.gripper_width` | grasp | `width_m`: finger position in metres. Without it a grasp verdict is always UNKNOWN. |
 | `sensors.button` | button | `pressed: true/false`, the button's own contact. Without it a button verdict is always UNKNOWN. |
 | `tags` | no | Free-form strings, e.g. `failure_mode`; `evaluate --by` groups by them. |
 | `provenance` | no | Written by `ingest`: tool version, `t0_ms`, SHA-256 of every source file. |
@@ -81,7 +100,10 @@ fields are allowed and covered by the evidence digest.
 ### How ButtonPressOracle counts presses
 
 A press is a contact run that starts after an open sample (a rising edge),
-lasts at least `min_hold_s` and ends with a release. Gaps and runs shorter
+is guaranteed to last at least `min_hold_s` and ends with a release. Sampling only
+brackets a contact: it lasted at least from its first to its last closed sample and
+at most from the sample before to the sample after. Guaranteed long enough is a
+press, guaranteed too short is not, and in between is `UNRESOLVED_HOLD` (UNKNOWN). Gaps and runs shorter
 than `debounce_s` are bounce and are merged or ignored. A contact still closed
 at the last sample means the press never completed (UNKNOWN). If fewer presses
 than required were seen and the switch stream has a gap longer than `max_gap_s`

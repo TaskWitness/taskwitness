@@ -126,6 +126,7 @@ taskwitness check bundle.json --episode examples/synthetic/02_not_released.json
 | 称重（最终稳定窗口） | 夹爪 | 视频 | 判定 |
 | --- | --- | --- | --- |
 | 物体过轻，无法与空板区分 | 任意 | 任意 | UNKNOWN |
+| 回合开始时称重板读数就不为空（上一次的物体、清零错误） | 任意 | 任意 | UNKNOWN（无法把最终重量归于本次尝试） |
 | 无数据或样本不足 | 任意 | 任意 | UNKNOWN |
 | 读数未稳定 | 任意 | 任意 | UNKNOWN |
 | 超过物体重量 | 任意 | 任意 | UNKNOWN |
@@ -145,13 +146,14 @@ taskwitness check bundle.json --episode examples/synthetic/02_not_released.json
 | --- | --- | --- |
 | 无数据 | 任意 | UNKNOWN |
 | 结束时仍按下 | 任意 | UNKNOWN（按压未完成） |
+| 次数不足，且某段接触的时长在当前采样率下无法与最短按压时长比较 | 任意 | UNKNOWN（请提高开关采样率） |
 | 次数不足且存在观测缺口 | 任意 | UNKNOWN（可能未被观测到） |
 | 次数超过 `max_presses` | 任意 | **FAIL** |
 | 没有按压或次数不足（全程有观测） | 任意 | **FAIL**（悬停或力度不够） |
 | 达到要求的完整按压 | 工具从未出现在按钮处 | UNKNOWN（可能被其他东西按下） |
 | 达到要求的完整按压 | 工具在按钮处 / 无数据 | **PASS** |
 
-接触抖动会被合并，短于 `min_hold_s` 的接触不计为按压。
+接触抖动会被合并。采样只能给出接触时长的上下界，只有保证不短于 `min_hold_s` 的接触才计为按压，保证短于它的不计，介于两者之间则 UNKNOWN。
 
 </details>
 
@@ -175,6 +177,7 @@ taskwitness check bundle.json --episode examples/synthetic/02_not_released.json
 | `evaluate` | 对照人工标签：条件 / 绝对漏判、误判失败、UNKNOWN 率（附 Wilson 区间）、审计覆盖率、按失败类型分层、精确 McNemar 检验，以及**任意时刻有效的序贯检验**（可随时查看、随时停止，错误率仍受控） |
 | `audit` | 在同一批回合上审计外部判定器（Robometer、TOPReward、VLM、操作员）：平衡准确率、ROC-AUC、校准误差、成功偏差 |
 | `estimate` | 成功率区间：仅用标签（Wilson 与有限样本）、预测增强推断（渐近与有限样本）。如实提示：判定器不够准、回合不够多时，预测增强区间反而比只用标签更宽 |
+| `simulate` | 生成带已知真值的物理仿真回合（放置 / 按钮），可调噪声、掉线、跟踪器失效、时钟偏差；见 [仿真研究](docs/SIMULATION.md) |
 | `keygen` / `sign` / `verify-signature` | 证据包 Ed25519 签名（需 `[sign]`） |
 
 完整操作规程见 [实验指南](docs/EXPERIMENT_GUIDE.md)。
@@ -202,23 +205,25 @@ Task(name="place_cube", scenes=[Scene(id="s1", instruction="put the cube on the 
 
 ## 📚 研究依据
 
-TaskWitness 的设计依据近期文献：FailBench（VLM 判定器的成功偏差）、覆盖偏移（策略越好，残留失败越难被视觉发现）、No Free Checker（验证器的可信度与可用性此消彼长）、LeRobot v0.6 的奖励模型（Robometer、TOPReward）、STEP / N-SCORE / SureSim / PPI（少量真实试验下的统计方法）。详见 [docs/RESEARCH.md](docs/RESEARCH.md)。
+TaskWitness 的设计依据近期文献（真实数据测试见 [docs/REAL_DATA.md](docs/REAL_DATA.md)）：FailBench（VLM 判定器的成功偏差）、覆盖偏移（策略越好，残留失败越难被视觉发现）、No Free Checker（验证器的可信度与可用性此消彼长）、LeRobot v0.6 的奖励模型（Robometer、TOPReward）、STEP / N-SCORE / SureSim / PPI（少量真实试验下的统计方法）。详见 [docs/RESEARCH.md](docs/RESEARCH.md)。
 
 ---
 
-## 📦 当前状态：v0.3
+## 📦 当前状态：v0.4
 
 **如实说明：pre-alpha。** 仓库中的样例全部为合成数据，尚无真实机器人、相机或称重传感器的测量结果。
 
 | ✅ 已实现 | 🛠️ 尚未实现 |
 | --- | --- |
-| `PlaceOracle`、`ButtonPressOracle` | WitnessNode 固件与实时串口记录器 |
+| `PlaceOracle`、`ButtonPressOracle`、`GraspOracle` | WitnessNode 固件与实时串口记录器 |
 | 严格的 episode 校验（拒绝 NaN / 无穷大，精确指出出错字段） | LeRobot 数据集适配器 |
 | 称重与相机校准、保形阈值校准、日志导入、颜色块视频跟踪 | 基于学习或 VLM 的视频检测器 |
-| `evaluate` / `audit` / `estimate`：Wilson 区间、McNemar、序贯检验、有限样本区间 | 真实硬件上的实验结果 |
+| `evaluate` / `audit` / `estimate`：Wilson 区间、McNemar、序贯检验、有限样本区间 | 称重 / 按钮 Oracle 的真实硬件结果（目前没有公开数据集包含这些传感器） |
+| 物理仿真器与仿真研究（`simulate`、`examples/simulation/study.py`） | |
+| 在真实数据（REASSEMBLE）上测试 GraspOracle | |
 | Inspect Robots scorer（已在真实评测流程中测试） | |
 | 确定性、防篡改证据包与可选签名 | |
-| 11 组合成样例、140 项测试（含对统计保证的模拟验证）、CI | |
+| 165 项测试（含对统计保证的模拟验证）、CI | |
 
 ---
 
@@ -239,7 +244,7 @@ TaskWitness 的设计依据近期文献：FailBench（VLM 判定器的成功偏�
 
 | 名称 | 内容 | 状态 |
 | --- | --- | --- |
-| **TaskWitness Core** | 开源验证 SDK | v0.3（本仓库） |
+| **TaskWitness Core** | 开源验证 SDK | v0.4（本仓库） |
 | **WitnessNode** | 低成本传感器盒 | 设计草案 |
 | **WitnessKit** | 真实物理实验工具包 | 规划中 |
 | **WitnessBench** | 社区测试数据集 | 规划中 |

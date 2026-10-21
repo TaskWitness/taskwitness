@@ -22,7 +22,7 @@
 
 TaskWitness 刻意独立于被测策略：它不接触策略内部状态，不发送任何控制命令，判定时也忽略策略自报的成功结果。
 
-## 数据流（v0.3）
+## 数据流（v0.4）
 
 ```
 原始日志 ──calibrate──► 校准文件
@@ -44,6 +44,8 @@ TaskWitness 刻意独立于被测策略：它不接触策略内部状态，不�
 | --- | --- |
 | `core` | 判定结果、错误类型、严格的 episode 校验（有限数值、数据流结构）、证据包组装与完整性摘要。 |
 | `oracle` | `PlaceOracle`：称重最终状态（`PLACED`、`ABSENT`、`PARTIAL_LOAD`、`OVERLOAD`、`UNSTABLE`、`NO_DATA`、`UNRESOLVABLE`）、夹爪状态、视频位置，以及融合规则。 |
+| `grasp` | `GraspOracle`：根据夹爪手指最终停在哪里，对照物体的宽度区间判断抓取；接近区间边缘或手指仍在移动时输出 UNKNOWN。使用机器人自身的夹爪位置，因此独立于策略自报结果，但不是外部传感器。 |
+| `simulation` | 带已知真值的物理仿真（放置、按钮），噪声、掉线、跟踪器失效、时钟偏差均可调。标签来自潜在的真实经过，从不来自任何 Oracle。 |
 | `button` | `ButtonPressOracle`：接触段的抖动合并与最短按压时长、观测缺口、结束时仍按下、按压次数限制；视频只能否决。 |
 | `api` | `verify_episode` 按 `task.type` 分发；`judge` 返回 `Verdict`。 |
 | `config` | Oracle 配置文件，严格校验；其摘要写入报告。 |

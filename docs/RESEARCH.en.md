@@ -163,6 +163,27 @@ not changed; it does not show the content is right.
 signatures over evidence bundles, with the trusted key pinned explicitly, and
 the documentation states what a signature does not prove.
 
+## 8. What the tests found (simulation and a public dataset)
+
+Two checks of the ideas above, both documented in full: [SIMULATION.en.md](SIMULATION.en.md) and
+[REAL_DATA.en.md](REAL_DATA.en.md).
+
+- **Physical evidence helped where the papers say vision struggles.** On REASSEMBLE
+  picks, a gripper-width check falsely passed 2 of 24 real failures, against 24
+  for "trust completion" and 21 for a band-free check, in line with FailBench's
+  finding that visual or completion-based judging is biased toward success.
+- **A verifier's own error modes show up only when you test it.** The simulation
+  found that a leftover object on the plate could be counted as a success, and that
+  slow switch sampling made brushes look like presses; both were fixed.
+- **The conformal guarantee needs more than a calibration set.** On real data,
+  calibrated for at most 10% of known-good windows to be called "moving", 16.5% were:
+  recordings differ session to session. This is the exchangeability caveat of
+  split conformal prediction made concrete; it is also why `taskwitness evaluate`
+  reports realized rates rather than trusting the nominal alpha.
+- **Cheap sensors are not interchangeable.** The robot's own wrist force sensor
+  (11.6 g noise, 143 g between-pose offset) cannot stand in for a load cell on a
+  52 g block; TaskWitness correctly refuses to judge with it.
+
 ## Open questions we want real data for
 
 1. On real hardware, how much does load-cell + vision fusion reduce conditional

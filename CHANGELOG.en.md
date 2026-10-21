@@ -2,6 +2,28 @@
 
 # Changelog
 
+## 0.4.0 (2026-10-21)
+
+TaskWitness is now tested against a physics simulation and a real public dataset, and the oracles were fixed where those tests found problems.
+
+### Added
+
+- **Simulation**: `taskwitness simulate place|button_press` and `examples/simulation/study.py`. Episodes are generated from a latent physical story (load-cell noise and drift, ringing after landing, dropped samples, frozen trackers, clock offsets, contact bounce) and labelled from that story, never from an oracle; the mix deliberately includes failures the oracles were not designed for (for example another object on the plate with a frozen tracker). Results: [docs/SIMULATION.en.md](docs/SIMULATION.en.md).
+- **GraspOracle** (task type `grasp`): judge a pick from where the gripper's fingers stop, against the object's width band.
+- **Real-data test**: `examples/real_data/reassemble_grasp.py` tests the GraspOracle on REASSEMBLE (CC-BY-4.0, Franka, human success labels) with the official train/test split. On the test split's 24 real failures it falsely passes 2 (8.3%, interval 2.3%-25.8%), against 100% for "trust that the segment ended" and 87.5% for a band-free "gripper not fully open" check. It also records, honestly, that the conformal guarantee did not hold across sessions. See [docs/REAL_DATA.en.md](docs/REAL_DATA.en.md).
+- `wrist_ft` simulated rig: the measured noise (median 11.6 g) and bias (interquartile width 143 g) of the real wrist force sensor show why the robot's own wrist sensor cannot replace a load cell.
+
+### Changed (driven by what simulation and real data found)
+
+- **PlaceOracle** now requires the plate to read empty at the start (`baseline_window_s`, the median of the first 0.5 s): a leftover object or bad tare gets UNKNOWN instead of being counted as this trial's success. In simulation (lab rig) false passes fall from 5.5% to 3.3% at no cost on ordinary successes.
+- **ButtonPressOracle**: sampling only brackets a contact's duration. It used to estimate duration from sample spacing, which counted 37 of 111 light brushes as presses at a 20 Hz switch rate; now only a contact guaranteed at least `min_hold_s` counts, and an unresolvable one is UNKNOWN (`UNRESOLVED_HOLD`). Also, with a cap on presses and one contact that cannot be ruled out as a press, it no longer says PASS (that hole let 1.0% of real failures pass at 20 Hz; now 0).
+- The trade-off between `calibrate thresholds` and the defaults is quantified: at load noise of 2 g and up, conformal calibration cuts UNKNOWN on ordinary successes from 44% (100% at 4 g) to 14% (20%); at 1 g and below the calibrated thresholds are stricter and UNKNOWN rises from about 2% to 6-11%.
+
+### Notes
+
+- The simulator's failure modes and noise levels are the author's assumptions, not measurements.
+- No public robot dataset records a load cell or a button contact, so the place and button oracles still have no real-hardware result.
+
 ## 0.3.0 (2026-10-21)
 
 Fills in the statistical methods v0.2 listed as not built. Every statistical guarantee is checked by simulation, and limits found in testing are documented.

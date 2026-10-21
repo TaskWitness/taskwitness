@@ -8,6 +8,15 @@
 记录日志 ─► 校准 ─► 视频跟踪 ─► 生成 episode ─► 标注 ─► 验证 / 评估 / 估计
 ```
 
+## 动手搭建之前：先用仿真器演练
+
+```bash
+taskwitness simulate place --n 500 --preset lab --set load_noise_g=1.0 --out sim
+taskwitness evaluate sim --by failure_mode --order-by trial
+```
+
+它按你预期的噪声水平生成带已知真值的回合，让你在采集真实数据之前就能看到：做出判定需要多少次试验、哪些失败类型会落入 UNKNOWN、采样率和阈值是否够用。其失败类型和噪声水平都是假设，见 [SIMULATION.md](SIMULATION.md)。不要把仿真器的数字当作结果。
+
 ## 0. 采集数据前先冻结方案
 
 在第一次试验*之前*写下并提交到 git：

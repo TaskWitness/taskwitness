@@ -24,7 +24,7 @@ TaskWitness is deliberately independent of the policy under test: it never
 receives policy internals, never sends commands, and ignores the policy's own
 success claim when deciding.
 
-## Data flow (v0.3)
+## Data flow (v0.4)
 
 ```
 raw logs ──calibrate──► calibration files
@@ -46,6 +46,8 @@ raw logs ──calibrate──► calibration files
 | --- | --- |
 | `core` | Verdicts, errors, strict episode validation (finite numbers, stream shapes), evidence-bundle assembly and integrity digests. |
 | `oracle` | `PlaceOracle`: load-cell final state (`PLACED`, `ABSENT`, `PARTIAL_LOAD`, `OVERLOAD`, `UNSTABLE`, `NO_DATA`, `UNRESOLVABLE`), gripper state, video position; fusion rules. |
+| `grasp` | `GraspOracle`: judge a pick from where the gripper's fingers stop, against the object's width band; UNKNOWN near the band edges or while the fingers move. Uses the robot's own gripper position, so it is independent of the policy's claim but not an external sensor. |
+| `simulation` | Physics-based place and button episodes with known ground truth, adjustable noise, dropouts, tracker failures and clock offsets. Labels come from the latent story, never from an oracle. |
 | `button` | `ButtonPressOracle`: contact runs with bounce merging and minimum hold, observation gaps, still-pressed and count limits; video can only veto. |
 | `api` | `verify_episode` dispatches on `task.type`; `judge` returns a `Verdict`. |
 | `config` | Oracle config files, validated strictly; their digest goes into reports. |
