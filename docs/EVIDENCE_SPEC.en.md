@@ -11,6 +11,7 @@ TaskWitness reads and writes versioned JSON documents, each identified by its
 | `taskwitness.evidence/v0` | `verify`, `batch` | Output: verdict + evidence bundle |
 | `taskwitness.video/v0` | `track` | Object / tool positions per frame |
 | `taskwitness.calibration/v0` | `calibrate` | Load-cell or camera calibration |
+| `taskwitness.thresholds/v0` | `calibrate thresholds` | Conformal oracle thresholds + a ready-to-use `config` block |
 | `taskwitness.signature/v0` | `sign` | Ed25519 signature over a bundle |
 
 ## Episode: `taskwitness.episode/v0`

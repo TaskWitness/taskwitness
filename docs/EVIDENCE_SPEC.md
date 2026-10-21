@@ -10,6 +10,7 @@ TaskWitness 读写带版本号的 JSON 文档，每种文档由 `schema` 字段�
 | `taskwitness.evidence/v0` | `verify`、`batch` | 输出：判定 + 证据包 |
 | `taskwitness.video/v0` | `track` | 逐帧的物体 / 工具位置 |
 | `taskwitness.calibration/v0` | `calibrate` | 称重或相机校准 |
+| `taskwitness.thresholds/v0` | `calibrate thresholds` | 保形 Oracle 阈值，以及可直接使用的 `config` 配置块 |
 | `taskwitness.signature/v0` | `sign` | 证据包的 Ed25519 签名 |
 
 ## Episode：`taskwitness.episode/v0`

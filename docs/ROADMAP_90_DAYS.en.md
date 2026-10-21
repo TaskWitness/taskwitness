@@ -44,7 +44,7 @@ Start date: 2026-10-21. Principle: every phase has checkable acceptance criteria
 - [ ] Collect reproduction results from external robot setups
 - [ ] Only after reproducible real results exist: Show HN, relevant Reddit communities and a Hugging Face Space
 - [x] Evidence-bundle signing (Ed25519, `taskwitness sign`, v0.2; a signature proves origin, not correctness)
-- [ ] Anytime-valid sequential tests and finite-sample PPI bounds (see [research notes](RESEARCH.en.md))
+- [x] Anytime-valid sequential test, finite-sample intervals and conformal threshold calibration (v0.3, see [research notes](RESEARCH.en.md); the full STEP / N-SCORE methods are not implemented)
 
 **Done when:** at least 1 real experiment result has been independently reproduced by an outside contributor and published.
 

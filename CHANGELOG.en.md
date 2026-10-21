@@ -2,6 +2,22 @@
 
 # Changelog
 
+## 0.3.0 (2026-10-21)
+
+Fills in the statistical methods v0.2 listed as not built. Every statistical guarantee is checked by simulation, and limits found in testing are documented.
+
+### Added
+
+- **Sequential test**: `taskwitness evaluate` gains an anytime-valid paired comparison (betting e-process). Look whenever you like and stop whenever you like; the type-I error stays at most alpha. `--order-by TAG` sets the episode order and `--alpha` the level. In simulation: under no difference it rejects 3.2% of 1,500 runs (limit 5%); a true 85/15 difference is always detected, at a median of 10 discordant pairs.
+- **Finite-sample intervals**: `taskwitness estimate` gains Waudby-Smith-Ramdas betting intervals (labels only) and finite-sample prediction-powered inference (a union bound of two betting intervals).
+- **Conformal threshold calibration**: `taskwitness calibrate thresholds` sets the stability, empty and mass-tolerance thresholds from known-good recordings so that a new good window exceeds a threshold with probability at most alpha. It errors rather than guesses when there is too little data, and flags objects too light to tell from empty.
+- New modules `inference` and `thresholds`: pure Python, no new dependencies.
+
+### Notes
+
+- The finite-sample prediction-powered interval is not always narrower: with a judge that falsely passes 10% of failures, 400 episodes and 40 labels it is wider than labels alone (0.68 vs 0.44); it only wins with an accurate judge and thousands of episodes. `estimate` prints every interval and reminds you to choose beforehand which one to report.
+- The sequential test is simpler than STEP and N-SCORE and covers paired binary outcomes only.
+
 ## 0.2.0 (2026-10-21)
 
 The new features follow recent research; the reasoning is in [docs/RESEARCH.en.md](docs/RESEARCH.en.md).

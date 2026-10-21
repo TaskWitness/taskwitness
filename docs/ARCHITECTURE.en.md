@@ -24,7 +24,7 @@ TaskWitness is deliberately independent of the policy under test: it never
 receives policy internals, never sends commands, and ignores the policy's own
 success claim when deciding.
 
-## Data flow (v0.2)
+## Data flow (v0.3)
 
 ```
 raw logs ──calibrate──► calibration files
@@ -52,13 +52,15 @@ raw logs ──calibrate──► calibration files
 | `calibration` | Load-cell tare/scale fit with noise and residuals; camera homography (normalized DLT) with reprojection error. Pure Python. |
 | `adapters` | `t_ms,value` logs and tracker output into episodes; strict parsing, clock alignment, provenance digests. |
 | `vision` | Optional (`[vision]`): colour-blob tracker with region of interest; video reader assuming constant frame rate. |
-| `evaluate` | Wilson intervals, exact McNemar, absolute/conditional misses and audit coverage per stratum, external-judge audit (AUC, ECE, success bias), prediction-powered success-rate estimate. |
+| `evaluate` | Wilson intervals, exact McNemar, sequential paired comparison, absolute/conditional misses and audit coverage per stratum, external-judge audit (AUC, ECE, success bias), success-rate estimates. |
+| `inference` | Anytime-valid sequential test (betting e-process), Waudby-Smith-Ramdas intervals, finite-sample prediction-powered inference, split-conformal bound. Pure Python; the guarantees are checked by simulation in the tests. |
+| `thresholds` | Conformal calibration of the PlaceOracle thresholds from known-good recordings. |
 | `signing` | Optional (`[sign]`): Ed25519 signatures over bundles, with explicit key pinning. |
 | `integrations.inspect_robots` | `taskwitness` and `taskwitness_unknown` scorers for Inspect Robots, registered through entry points. |
 | `cli` | All commands. |
 
 The core (`core`, oracles, `api`, `config`, `calibration`, `adapters`,
-`evaluate`) has no third-party dependencies.
+`evaluate`, `inference`, `thresholds`) has no third-party dependencies.
 
 ## Design rules
 
@@ -81,7 +83,6 @@ These are directions, not features.
 - WitnessNode firmware and a live serial recorder (today: any logger that writes `t_ms,value`).
 - A LeRobot dataset adapter (today: export per-episode scores and use `audit`).
 - Learned or VLM-based video detectors (today: a colour-blob baseline).
-- Anytime-valid sequential tests (STEP / N-SCORE) and finite-sample PPI bounds.
-- Conformal calibration of oracle thresholds from known-good recordings.
+- STEP's exact stopping rule, N-SCORE's partial-credit metrics and SureSim's paired real/simulation rectifier (today: a simpler sequential test for paired binary outcomes).
 
 See [RESEARCH.en.md](RESEARCH.en.md) for the reasoning behind these choices.

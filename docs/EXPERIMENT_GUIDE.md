@@ -30,7 +30,16 @@ taskwitness calibrate load-cell --empty empty.csv \
     --ref 100=ref100.csv --ref 500=ref500.csv --out loadcell.cal.json
 ```
 
-输出会给出噪声、残差和 `suggested_place_config`。如果最大误差超过几克，先修正机械结构（板要刚性、线缆不要受力）再继续。现在就把选定的阈值写入 `config.json`，不要等看到结果之后再改。
+输出会给出噪声、残差和 `suggested_place_config`。如果最大误差超过几克，先修正机械结构（板要刚性、线缆不要受力）再继续。
+
+然后用已知正常的录像来设定 Oracle 阈值，而不是靠猜。分别记录空称重板和物体静置在板上的状态，最好分多次、多个时段采集（默认 α = 0.05 时，每类至少需要 19 个 1 秒窗口；记录一分钟约得到 59 个）：
+
+```bash
+taskwitness calibrate thresholds --empty empty.csv --object 52=block.csv \
+    --load-cell-cal loadcell.cal.json --alpha 0.05 --out thresholds.json
+```
+
+只要设备在校准与实验之间没有漂移，新的正常窗口超出每个阈值的概率就不超过 α。现在就把输出中的 `config` 部分写入 `config.json`，不要等看到结果之后再改。
 
 ## 2. 校准相机
 
@@ -92,8 +101,10 @@ taskwitness estimate episodes --config config.json --out estimate.json
 - TaskWitness 与纯视觉各自的条件漏判和误判失败，附 95% 区间；
 - UNKNOWN 率：用很高的 UNKNOWN 率换来的低漏判率不算胜利；
 - 绝对漏判、审计覆盖率，以及按失败类型的拆分；
-- 成对误判通过的 McNemar p 值；
+- 成对误判通过的 McNemar p 值；如果想提前停止，可以用序贯检验：`taskwitness evaluate ... --order-by trial` 按试验顺序读取回合（导入时用 `--tag trial=N` 设置数值标签），报告是否以及在第几个不一致对处拒绝“没有差异”，无论查看多少次，第一类错误率都保持在 α 以内。顺序和 α 要在第 0 步确定，不能事后再定；
 - `config_sha256` 与证据摘要列表。
+
+`estimate` 会打印多个有效区间（仅用标签、预测增强，渐近与有限样本各一种）。请在第 0 步决定报告哪一个：看到结果后再选最窄的一个，会使其覆盖率保证失效。预测增强区间只有在判定器很准确且有数千个回合时才有帮助；在小规模实验里，只用标签通常更窄。
 
 无论结果对 TaskWitness 有利与否，都要公开。
 

@@ -82,7 +82,7 @@ UNKNOWN  05_evidence_conflict.json  (load matches the object but video places it
 
 👉 在 02、03、b02、b03 四个样例中，纯视觉判定为 **PASS**，物理证据显示 **FAIL**。
 
-**统计上要诚实：** 只有 4 个成对差异时，精确 McNemar 检验给出 p = 0.0625，并不显著。工具会如实报告这一点，而不是夸大结论：
+**统计上要诚实：** 只有 4 个成对差异时，精确 McNemar 检验给出 p = 0.0625，任意时刻有效的序贯检验给出 p ≈ 0.17，都不显著。工具会如实报告这一点，而不是夸大结论：
 
 ```bash
 taskwitness evaluate examples/synthetic examples/synthetic_button
@@ -168,12 +168,13 @@ taskwitness check bundle.json --episode examples/synthetic/02_not_released.json
 | 命令 | 作用 |
 | --- | --- |
 | `calibrate load-cell` / `calibrate camera` | 称重去皮与标定（报告噪声和残差）；像素到称重板坐标的单应矩阵（报告重投影误差） |
+| `calibrate thresholds` | 用已知正常的录像，通过保形预测（conformal prediction）给出稳定性 / 空载 / 质量容差阈值：新的正常窗口超出阈值的概率不超过 α |
 | `track` | 在视频中跟踪有颜色的物体或标记，支持感兴趣区域（需 `[vision]`） |
 | `ingest place` / `ingest button_press` | 把 `t_ms,value` 日志和跟踪结果转为 episode，记录每个源文件的 SHA-256 |
 | `verify` / `batch` / `check` | 判定、批量判定、检查证据包完整性；均支持 `--config` 冻结阈值 |
-| `evaluate` | 对照人工标签：条件 / 绝对漏判、误判失败、UNKNOWN 率（附 Wilson 区间）、审计覆盖率、按失败类型分层、精确 McNemar 检验 |
+| `evaluate` | 对照人工标签：条件 / 绝对漏判、误判失败、UNKNOWN 率（附 Wilson 区间）、审计覆盖率、按失败类型分层、精确 McNemar 检验，以及**任意时刻有效的序贯检验**（可随时查看、随时停止，错误率仍受控） |
 | `audit` | 在同一批回合上审计外部判定器（Robometer、TOPReward、VLM、操作员）：平衡准确率、ROC-AUC、校准误差、成功偏差 |
-| `estimate` | 预测增强推断（PPI）：所有回合的判定 + 随机子集的人工标签 → 带有效区间的成功率 |
+| `estimate` | 成功率区间：仅用标签（Wilson 与有限样本）、预测增强推断（渐近与有限样本）。如实提示：判定器不够准、回合不够多时，预测增强区间反而比只用标签更宽 |
 | `keygen` / `sign` / `verify-signature` | 证据包 Ed25519 签名（需 `[sign]`） |
 
 完整操作规程见 [实验指南](docs/EXPERIMENT_GUIDE.md)。
@@ -205,7 +206,7 @@ TaskWitness 的设计依据近期文献：FailBench（VLM 判定器的成功偏�
 
 ---
 
-## 📦 当前状态：v0.2
+## 📦 当前状态：v0.3
 
 **如实说明：pre-alpha。** 仓库中的样例全部为合成数据，尚无真实机器人、相机或称重传感器的测量结果。
 
@@ -213,11 +214,11 @@ TaskWitness 的设计依据近期文献：FailBench（VLM 判定器的成功偏�
 | --- | --- |
 | `PlaceOracle`、`ButtonPressOracle` | WitnessNode 固件与实时串口记录器 |
 | 严格的 episode 校验（拒绝 NaN / 无穷大，精确指出出错字段） | LeRobot 数据集适配器 |
-| 称重与相机校准、日志导入、颜色块视频跟踪 | 基于学习或 VLM 的视频检测器 |
-| `evaluate` / `audit` / `estimate` 统计工具 | 任意时刻有效的序贯检验、有限样本 PPI 界 |
-| Inspect Robots scorer（已在真实评测流程中测试） | 真实硬件上的实验结果 |
+| 称重与相机校准、保形阈值校准、日志导入、颜色块视频跟踪 | 基于学习或 VLM 的视频检测器 |
+| `evaluate` / `audit` / `estimate`：Wilson 区间、McNemar、序贯检验、有限样本区间 | 真实硬件上的实验结果 |
+| Inspect Robots scorer（已在真实评测流程中测试） | |
 | 确定性、防篡改证据包与可选签名 | |
-| 11 组合成样例、116 项测试、CI | |
+| 11 组合成样例、140 项测试（含对统计保证的模拟验证）、CI | |
 
 ---
 
@@ -238,7 +239,7 @@ TaskWitness 的设计依据近期文献：FailBench（VLM 判定器的成功偏�
 
 | 名称 | 内容 | 状态 |
 | --- | --- | --- |
-| **TaskWitness Core** | 开源验证 SDK | v0.2（本仓库） |
+| **TaskWitness Core** | 开源验证 SDK | v0.3（本仓库） |
 | **WitnessNode** | 低成本传感器盒 | 设计草案 |
 | **WitnessKit** | 真实物理实验工具包 | 规划中 |
 | **WitnessBench** | 社区测试数据集 | 规划中 |

@@ -82,7 +82,7 @@ UNKNOWN  05_evidence_conflict.json  (load matches the object but video places it
 
 👉 In 02, 03, b02 and b03, a video-only judge says **PASS**. Physical evidence says **FAIL**.
 
-**Honest statistics:** with only 4 discordant pairs, the exact McNemar test gives p = 0.0625, which is not significant, and the tool says so instead of overclaiming:
+**Honest statistics:** with only 4 discordant pairs, the exact McNemar test gives p = 0.0625 and the anytime-valid sequential test p ≈ 0.17. Neither is significant, and the tool says so instead of overclaiming:
 
 ```bash
 taskwitness evaluate examples/synthetic examples/synthetic_button
@@ -168,12 +168,13 @@ record logs ─► calibrate ─► track ─► ingest ─► verify / evaluate
 | Command | What it does |
 | --- | --- |
 | `calibrate load-cell` / `calibrate camera` | Load-cell tare and scale (reports noise and residuals); pixel-to-plate homography (reports reprojection error) |
+| `calibrate thresholds` | Conformal stability / empty / mass-tolerance thresholds from known-good recordings: a new good window exceeds a threshold with probability at most α |
 | `track` | Track a coloured object or marker in video, with a region of interest (needs `[vision]`) |
 | `ingest place` / `ingest button_press` | Turn `t_ms,value` logs and tracker output into an episode, recording the SHA-256 of every source file |
 | `verify` / `batch` / `check` | Judge, judge a directory, check bundle integrity; all accept `--config` to freeze thresholds |
-| `evaluate` | Against human labels: conditional and absolute misses, false fails, UNKNOWN rate (with Wilson intervals), audit coverage, per-failure-mode strata, exact McNemar test |
+| `evaluate` | Against human labels: conditional and absolute misses, false fails, UNKNOWN rate (with Wilson intervals), audit coverage, per-failure-mode strata, exact McNemar test, and an **anytime-valid sequential test** (look whenever you like, stop whenever you like, the error rate stays controlled) |
 | `audit` | Audit an external judge (Robometer, TOPReward, a VLM, an operator) on the same episodes: balanced accuracy, ROC-AUC, calibration error, success bias |
-| `estimate` | Prediction-powered inference: verdicts on every episode + labels on a random subset give a success rate with a valid interval |
+| `estimate` | Success-rate intervals: labels only (Wilson and finite-sample) and prediction-powered (asymptotic and finite-sample). Reports honestly that with an inaccurate judge or few episodes the prediction-powered interval is wider than labels alone |
 | `keygen` / `sign` / `verify-signature` | Ed25519 signatures for bundles (needs `[sign]`) |
 
 The full protocol is in the [experiment guide](docs/EXPERIMENT_GUIDE.en.md).
@@ -205,7 +206,7 @@ TaskWitness's design follows recent work: FailBench (success bias of VLM judges)
 
 ---
 
-## 📦 What's in v0.2
+## 📦 What's in v0.3
 
 **Honest status: pre-alpha.** Every example in this repo is synthetic; no result here is yet a measurement from a real robot, camera or load cell.
 
@@ -213,11 +214,11 @@ TaskWitness's design follows recent work: FailBench (success bias of VLM judges)
 | --- | --- |
 | `PlaceOracle`, `ButtonPressOracle` | WitnessNode firmware and a live serial recorder |
 | Strict episode validation (rejects NaN/inf, points at the bad field) | LeRobot dataset adapter |
-| Load-cell and camera calibration, log ingestion, colour-blob video tracking | Learned or VLM-based video detectors |
-| `evaluate` / `audit` / `estimate` statistics | Anytime-valid sequential tests, finite-sample PPI bounds |
-| Inspect Robots scorers (tested in a real eval loop) | Results on real hardware |
+| Load-cell and camera calibration, conformal thresholds, log ingestion, colour-blob video tracking | Learned or VLM-based video detectors |
+| `evaluate` / `audit` / `estimate`: Wilson intervals, McNemar, sequential test, finite-sample intervals | Results on real hardware |
+| Inspect Robots scorers (tested in a real eval loop) | |
 | Deterministic, tamper-evident bundles with optional signatures | |
-| 11 synthetic episodes, 116 tests, CI | |
+| 11 synthetic episodes, 140 tests (including simulations of the statistical guarantees), CI | |
 
 ---
 
@@ -238,7 +239,7 @@ Details: [docs/ROADMAP_90_DAYS.en.md](docs/ROADMAP_90_DAYS.en.md) · Hardware no
 
 | Name | What | Status |
 | --- | --- | --- |
-| **TaskWitness Core** | Open-source verification SDK | v0.2 (this repo) |
+| **TaskWitness Core** | Open-source verification SDK | v0.3 (this repo) |
 | **WitnessNode** | Low-cost sensor box | design notes |
 | **WitnessKit** | Physical experiment kit | planned |
 | **WitnessBench** | Community test dataset | planned |
